@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DAI Atlas &amp; War Table</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>Dragon Age: Inquisition</h1>
+  <nav class="topnav">
+    <a href="#/atlas"     class="navlink" data-route="atlas">Resource Atlas</a>
+    <a href="#/wartable"  class="navlink" data-route="wartable">War Table</a>
+  </nav>
+  <div class="topbar-right">
+    <span id="counts" class="counts"></span>
+  </div>
+</header>
+
+<!-- =========================== ATLAS =========================== -->
+<main class="layout route" id="route-atlas">
+  <aside class="sidebar">
+    <section class="search-block">
+      <input id="search" type="search" placeholder="Search resource, region, codex…" autocomplete="off" />
+    </section>
+
+    <section class="filters">
+      <h3>Region</h3>
+      <div id="regionList" class="pill-list"></div>
+
+      <h3>Category</h3>
+      <div id="categoryList" class="pill-list"></div>
+
+      <h3>Rarity</h3>
+      <div id="rarityList" class="pill-list"></div>
+
+      <button id="clearFilters" class="btn ghost full">Clear filters</button>
+    </section>
+
+    <section class="legend">
+      <h3>Legend</h3>
+      <ul id="legendList" class="legend-list"></ul>
+    </section>
+  </aside>
+
+  <section class="content">
+    <div class="map-toolbar">
+      <label>Region:
+        <select id="regionSelect"></select>
+      </label>
+      <button id="toggleView" class="btn">Toggle Map / List</button>
+      <span id="regionMeta" class="hint"></span>
+    </div>
+
+    <div id="mapView" class="map-view">
+      <div id="mapStage" class="map-stage">
+        <div id="mapSvgHost" class="map-svg-host"></div>
+        <div id="pinLayer" class="pin-layer"></div>
+      </div>
+    </div>
+
+    <div id="listView" class="list-view hidden">
+      <div id="resultsList"></div>
+    </div>
+  </section>
+
+  <aside class="detail" id="detail">
+    <div class="detail-empty">Select a pin or list entry to see details.</div>
+  </aside>
+</main>
+
+<!-- =========================== WAR TABLE =========================== -->
+<main class="layout wt-layout route hidden" id="route-wartable">
+  <aside class="sidebar">
+    <section class="search-block">
+      <input id="wtSearch" type="search" placeholder="Search mission, reward, advisor…" autocomplete="off" />
+    </section>
+
+    <section class="filters">
+      <h3>Act / DLC</h3>
+      <div id="wtActList" class="pill-list"></div>
+
+      <h3>Advisor</h3>
+      <div id="wtAdvisorList" class="pill-list"></div>
+
+      <h3>Category</h3>
+      <div id="wtCategoryList" class="pill-list"></div>
+
+      <h3>Region tie-in</h3>
+      <div id="wtRegionList" class="pill-list"></div>
+
+      <button id="wtClearFilters" class="btn ghost full">Clear filters</button>
+    </section>
+
+    <section class="legend">
+      <h3>Advisors</h3>
+      <ul class="legend-list">
+        <li><span class="dot" style="background:#b04a3a"></span> Cullen — military force</li>
+        <li><span class="dot" style="background:#c9a14a"></span> Josephine — diplomacy</li>
+        <li><span class="dot" style="background:#4f7ea3"></span> Leliana — secrets</li>
+      </ul>
+    </section>
+  </aside>
+
+  <section class="content wt-content">
+    <div class="wt-toolbar">
+      <span id="wtCounts" class="hint"></span>
+      <span class="hint">Times shown are real-time (in-game advance for War Table operations).</span>
+    </div>
+    <div id="wtList" class="wt-list"></div>
+  </section>
+
+  <aside class="detail" id="wtDetail">
+    <div class="detail-empty">Select a mission for full requirements and outcomes.</div>
+  </aside>
+</main>
+
+<footer class="footer">
+  <span>Data compiled from public Dragon Age Wiki / Fextralife / community forums. Fan-made companion. Not affiliated with BioWare or EA.</span>
+</footer>
+
+<script src="js/data/regions.js"></script>
+<script src="js/data/categories.js"></script>
+<script src="js/data/resources.js"></script>
+<script src="js/data/wartable.js"></script>
+<script src="js/maps.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
