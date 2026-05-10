@@ -170,6 +170,12 @@
         // Filter changes can leave a now-hidden selection; clear it.
         if (key.startsWith("atlas-")) state.selected = null;
         if (key.startsWith("wt-"))    state.wtSelected = null;
+        // Atlas region pills also act as a region switcher: clicking a region
+        // jumps the map to it. Without this, in map view (which shows only
+        // one region at a time) the pill click looks dead.
+        if (key === "atlas-region" && activeSet.has(item.id)) {
+          state.currentRegion = item.id;
+        }
         render();
       });
       container.appendChild(pill);
