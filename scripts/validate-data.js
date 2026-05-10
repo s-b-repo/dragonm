@@ -177,6 +177,10 @@ for (const m of WT) {
   if (m.tags !== undefined && !Array.isArray(m.tags)) {
     fail(`${tag}: \`tags\` must be an array`);
   }
+
+  if (m.levelUnlocked !== undefined && m.levelUnlocked !== null && typeof m.levelUnlocked !== "string") {
+    fail(`${tag}: \`levelUnlocked\` must be a string or null`);
+  }
 }
 
 // ---- Soft warnings (don't fail the build) -----------------------------------

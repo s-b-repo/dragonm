@@ -542,8 +542,9 @@
       });
       html.push('</table>');
       if (m.recommended) {
+        const recMeta = ADVISOR_META[m.recommended] || { name: m.recommended };
         html.push('<p style="margin-top:6px"><span class="wt-pill recommended">★ Recommended: ' +
-                  escapeHtml(ADVISOR_META[m.recommended].name) + '</span></p>');
+                  escapeHtml(recMeta.name) + '</span></p>');
       }
       html.push('</div>');
     }
@@ -558,6 +559,10 @@
 
     if (m.notes) {
       html.push('<div class="detail-section"><h4>Strategy / Notes</h4><p>' + escapeHtml(m.notes) + '</p></div>');
+    }
+
+    if (m.levelUnlocked) {
+      html.push('<div class="detail-section"><h4>Level / Unlock</h4><p>' + escapeHtml(m.levelUnlocked) + '</p></div>');
     }
 
     if (m.tags && m.tags.length) {
