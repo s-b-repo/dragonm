@@ -24,6 +24,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Syntax-check JS
+        run: node --check js/app.js js/maps.js js/data/regions.js js/data/categories.js js/data/resources.js js/data/wartable.js scripts/validate-data.js
+
+      - name: Validate data
+        run: node scripts/validate-data.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

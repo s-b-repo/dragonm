@@ -7,7 +7,7 @@ window.DAI_REGIONS = [
   { id: "storm_coast",      name: "The Storm Coast",            act: "Act 1",      notes: "Bull's Chargers recruitment, dragon spawn." },
   { id: "fallow_mire",      name: "The Fallow Mire",            act: "Act 1",      notes: "Avvar boss + Fereldan soldiers questline." },
   { id: "forbidden_oasis",  name: "The Forbidden Oasis",        act: "Act 1",      notes: "Solasan temple — shard-keyed reward chambers." },
-  { id: "crestwood",        name: "Crestwood",                  act: "Act 1",      notes: "Old Crestwood underwater; Highland Ravager dragon." },
+  { id: "crestwood",        name: "Crestwood",                  act: "Act 1",      notes: "Old Crestwood lies underwater until the lake is drained. No high dragon spawns here." },
   { id: "western_approach", name: "The Western Approach",       act: "Act 2",      notes: "Adamant lead-in; Abyssal High Dragon." },
   { id: "exalted_plains",   name: "The Exalted Plains",         act: "Act 2",      notes: "Dalish camp; Gamordan Stormrider dragon." },
   { id: "emerald_graves",   name: "The Emerald Graves",         act: "Act 2",      notes: "Two dragons; Freemen of the Dales." },

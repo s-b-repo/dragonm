@@ -4,38 +4,58 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>DAI Atlas &amp; War Table</title>
+<meta name="description" content="Fan-made Dragon Age: Inquisition resource atlas and War Table mission planner. Browse regions, pins, rarities, and advisor outcomes." />
+<meta property="og:title" content="DAI Atlas &amp; War Table" />
+<meta property="og:description" content="Fan-made Dragon Age: Inquisition resource atlas and War Table mission planner." />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#15110d" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315110d'/%3E%3Cpath d='M16 5 L26 27 L16 21 L6 27 Z' fill='%23c9a14a'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="css/style.css" />
+<script src="js/data/regions.js" defer></script>
+<script src="js/data/categories.js" defer></script>
+<script src="js/data/resources.js" defer></script>
+<script src="js/data/wartable.js" defer></script>
+<script src="js/maps.js" defer></script>
+<script src="js/app.js" defer></script>
 </head>
 <body>
+<noscript>
+  <div style="padding:30px;color:#ece2cc;background:#15110d;text-align:center;font-family:Georgia,serif">
+    <h1 style="color:#e6c378">JavaScript required</h1>
+    <p>This atlas renders pins, maps and missions client-side. Please enable JavaScript to use it.</p>
+  </div>
+</noscript>
 <header class="topbar">
   <h1>Dragon Age: Inquisition</h1>
-  <nav class="topnav">
+  <nav class="topnav" aria-label="Primary">
     <a href="#/atlas"     class="navlink" data-route="atlas">Resource Atlas</a>
     <a href="#/wartable"  class="navlink" data-route="wartable">War Table</a>
   </nav>
   <div class="topbar-right">
-    <span id="counts" class="counts"></span>
+    <button id="toggleSidebar" class="btn icon-btn" type="button" aria-expanded="false" aria-controls="route-atlas">Filters</button>
+    <button id="toggleDetail"  class="btn icon-btn" type="button" aria-expanded="false">Details</button>
+    <span id="counts" class="counts" aria-live="polite"></span>
   </div>
 </header>
 
 <!-- =========================== ATLAS =========================== -->
 <main class="layout route" id="route-atlas">
-  <aside class="sidebar">
+  <aside class="sidebar" aria-label="Atlas filters">
     <section class="search-block">
-      <input id="search" type="search" placeholder="Search resource, region, codex…" autocomplete="off" />
+      <input id="search" type="search" placeholder="Search resource, region, codex…" autocomplete="off" aria-label="Search resources" />
     </section>
 
     <section class="filters">
-      <h3>Region</h3>
-      <div id="regionList" class="pill-list"></div>
+      <h3 id="atlas-filter-region">Region</h3>
+      <div id="regionList" class="pill-list" role="group" aria-labelledby="atlas-filter-region"></div>
 
-      <h3>Category</h3>
-      <div id="categoryList" class="pill-list"></div>
+      <h3 id="atlas-filter-category">Category</h3>
+      <div id="categoryList" class="pill-list" role="group" aria-labelledby="atlas-filter-category"></div>
 
-      <h3>Rarity</h3>
-      <div id="rarityList" class="pill-list"></div>
+      <h3 id="atlas-filter-rarity">Rarity</h3>
+      <div id="rarityList" class="pill-list" role="group" aria-labelledby="atlas-filter-rarity"></div>
 
-      <button id="clearFilters" class="btn ghost full">Clear filters</button>
+      <button id="clearFilters" class="btn ghost full" type="button">Clear filters</button>
     </section>
 
     <section class="legend">
@@ -49,14 +69,14 @@
       <label>Region:
         <select id="regionSelect"></select>
       </label>
-      <button id="toggleView" class="btn">Toggle Map / List</button>
+      <button id="toggleView" class="btn" type="button">Toggle Map / List</button>
       <span id="regionMeta" class="hint"></span>
     </div>
 
     <div id="mapView" class="map-view">
       <div id="mapStage" class="map-stage">
         <div id="mapSvgHost" class="map-svg-host"></div>
-        <div id="pinLayer" class="pin-layer"></div>
+        <div id="pinLayer" class="pin-layer" role="group" aria-label="Resource pins"></div>
       </div>
     </div>
 
@@ -65,40 +85,40 @@
     </div>
   </section>
 
-  <aside class="detail" id="detail">
+  <aside class="detail" id="detail" aria-label="Resource details">
     <div class="detail-empty">Select a pin or list entry to see details.</div>
   </aside>
 </main>
 
 <!-- =========================== WAR TABLE =========================== -->
-<main class="layout wt-layout route hidden" id="route-wartable">
-  <aside class="sidebar">
+<section class="layout wt-layout route hidden" id="route-wartable" aria-label="War Table">
+  <aside class="sidebar" aria-label="War table filters">
     <section class="search-block">
-      <input id="wtSearch" type="search" placeholder="Search mission, reward, advisor…" autocomplete="off" />
+      <input id="wtSearch" type="search" placeholder="Search mission, reward, advisor…" autocomplete="off" aria-label="Search missions" />
     </section>
 
     <section class="filters">
-      <h3>Act / DLC</h3>
-      <div id="wtActList" class="pill-list"></div>
+      <h3 id="wt-filter-act">Act / DLC</h3>
+      <div id="wtActList" class="pill-list" role="group" aria-labelledby="wt-filter-act"></div>
 
-      <h3>Advisor</h3>
-      <div id="wtAdvisorList" class="pill-list"></div>
+      <h3 id="wt-filter-advisor">Advisor</h3>
+      <div id="wtAdvisorList" class="pill-list" role="group" aria-labelledby="wt-filter-advisor"></div>
 
-      <h3>Category</h3>
-      <div id="wtCategoryList" class="pill-list"></div>
+      <h3 id="wt-filter-category">Category</h3>
+      <div id="wtCategoryList" class="pill-list" role="group" aria-labelledby="wt-filter-category"></div>
 
-      <h3>Region tie-in</h3>
-      <div id="wtRegionList" class="pill-list"></div>
+      <h3 id="wt-filter-region">Region tie-in</h3>
+      <div id="wtRegionList" class="pill-list" role="group" aria-labelledby="wt-filter-region"></div>
 
-      <button id="wtClearFilters" class="btn ghost full">Clear filters</button>
+      <button id="wtClearFilters" class="btn ghost full" type="button">Clear filters</button>
     </section>
 
     <section class="legend">
       <h3>Advisors</h3>
       <ul class="legend-list">
-        <li><span class="dot" style="background:#b04a3a"></span> Cullen — military force</li>
-        <li><span class="dot" style="background:#c9a14a"></span> Josephine — diplomacy</li>
-        <li><span class="dot" style="background:#4f7ea3"></span> Leliana — secrets</li>
+        <li><span class="dot" style="background:#b04a3a" aria-hidden="true"></span> Cullen — military force</li>
+        <li><span class="dot" style="background:#c9a14a" aria-hidden="true"></span> Josephine — diplomacy</li>
+        <li><span class="dot" style="background:#4f7ea3" aria-hidden="true"></span> Leliana — secrets</li>
       </ul>
     </section>
   </aside>
@@ -111,20 +131,17 @@
     <div id="wtList" class="wt-list"></div>
   </section>
 
-  <aside class="detail" id="wtDetail">
+  <aside class="detail" id="wtDetail" aria-label="Mission details">
     <div class="detail-empty">Select a mission for full requirements and outcomes.</div>
   </aside>
-</main>
+</section>
+
+<div id="mobileBackdrop" class="mobile-backdrop" hidden></div>
 
 <footer class="footer">
   <span>Data compiled from public Dragon Age Wiki / Fextralife / community forums. Fan-made companion. Not affiliated with BioWare or EA.</span>
+  <span class="footer-sep" aria-hidden="true">·</span>
+  <a class="footer-link" href="docs/maps-preview.html">All maps preview</a>
 </footer>
-
-<script src="js/data/regions.js"></script>
-<script src="js/data/categories.js"></script>
-<script src="js/data/resources.js"></script>
-<script src="js/data/wartable.js"></script>
-<script src="js/maps.js"></script>
-<script src="js/app.js"></script>
 </body>
 </html>

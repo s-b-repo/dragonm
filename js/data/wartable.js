@@ -260,19 +260,19 @@ window.DAI_WARTABLE = [
   // STORY CRITICAL — ACT 2/3
   // ============================================================
   { id: "wt-here-lies-abyss", name: "Here Lies the Abyss", act: "Act 2", category: "story", region: "western_approach",
-    prerequisites: "Western Approach lead-up complete.",
-    power: 20, advisors: ["josephine","leliana"], time: {}, recommended: null,
-    defaultRewards: "Unlocks Adamant Fortress mission.",
-    outcome: "Major story: Hawke or Warden sacrificed; Wardens become allies or exiled.",
-    notes: "Choice is permanent. Either Hawke or Stroud/Alistair/Loghain dies in the Fade.",
+    prerequisites: "Western Approach lead-up complete; Hawke + Warden contact recruited.",
+    power: 20, advisors: ["josephine","leliana"], time: {josephine: "0:48", leliana: "0:30"}, recommended: "leliana",
+    defaultRewards: "Unlocks the Adamant Fortress assault mission.",
+    outcome: "Major story: Hawke or Warden sacrificed; Wardens become Inquisition allies or are exiled.",
+    notes: "Choice is permanent. Either Hawke or Stroud/Alistair/Loghain dies in the Fade. Leliana's path is faster; either is narratively valid.",
     tags: ["story","required","choice","wardens"] },
 
   { id: "wt-arbor-wilds", name: "What Pride Had Wrought", act: "Act 3", category: "story", region: "arbor_wilds",
-    prerequisites: "Reach late Act 2 / Act 3 main story.",
-    power: 20, advisors: ["cullen","josephine","leliana"], time: {}, recommended: null,
+    prerequisites: "Reach late Act 2 / Act 3 main story; complete Halamshiral.",
+    power: 20, advisors: ["cullen","josephine","leliana"], time: {cullen: "1:00", josephine: "1:00", leliana: "1:00"}, recommended: "cullen",
     defaultRewards: "Unlocks the Arbor Wilds final assault.",
-    outcome: "Major story: lead the assault on Mythal's Temple.",
-    notes: "Choose one advisor to lead the army — minor cosmetic differences.",
+    outcome: "Major story: lead the assault on Mythal's Temple. Sets up the Well of Sorrows decision.",
+    notes: "Advisor choice is cosmetic (vanguard composition only) — Cullen is the canonical lead but any pick works.",
     tags: ["story","required"] },
 
   { id: "wt-final-doom", name: "Doom Upon All the World", act: "Act 3", category: "story", region: "war-table",
@@ -287,11 +287,11 @@ window.DAI_WARTABLE = [
   // CULLEN / JOSEPHINE / LELIANA — ADVISOR ARCS
   // ============================================================
   { id: "wt-cullen-lyrium", name: "Cullen — Lyrium Withdrawal", act: "Act 2", category: "approval", region: "war-table",
-    prerequisites: "Cullen-personal-quest line.",
-    power: 0, advisors: ["leliana","josephine"], time: {}, recommended: "leliana",
-    defaultRewards: "Cullen approval; advisor-personal flavor.",
-    outcome: "Cullen continues lyrium-free path; Trespasser flag.",
-    notes: "Talking to him in his office is the key step; the war table mission is supportive.",
+    prerequisites: "Speak with Cullen in his office until 'Before the Dawn' / lyrium discussion triggers.",
+    power: 0, advisors: ["leliana","josephine"], time: {leliana: "0:30", josephine: "0:48"}, recommended: "leliana",
+    defaultRewards: "Cullen approval; reinforces his lyrium-free arc.",
+    outcome: "Cullen continues without lyrium — Trespasser flag for his health and continued service.",
+    notes: "The pivotal moment is the office conversation: tell him to keep going. The war table op is supportive flavour, not the deciding choice.",
     tags: ["approval","cullen"] },
 
   { id: "wt-leliana-becomes", name: "Leliana — Choose Successor (Most Holy)", act: "Act 3", category: "choice", region: "war-table",
@@ -303,11 +303,12 @@ window.DAI_WARTABLE = [
     tags: ["choice","divine","leliana"] },
 
   { id: "wt-josie-honor", name: "Josephine — A Threat in Antiva (House of Repose)", act: "Act 2", category: "approval", region: "war-table",
-    prerequisites: "Speak to Josephine repeatedly.",
-    power: 0, advisors: ["josephine","leliana"], time: {}, recommended: "leliana",
+    prerequisites: "Speak to Josephine repeatedly until 'Heraldry From a Herald' chain finishes.",
+    power: 0, advisors: ["josephine","leliana"], time: {josephine: "1:00", leliana: "0:48"}, recommended: "leliana",
+    rewardsBy: { josephine: "Diplomatic resolution — Montilyet honour restored, debt paid.", leliana: "Eliminate the writ author — assassins dispersed quickly." },
     defaultRewards: "Resolves the Montilyet contract with the House of Repose.",
-    outcome: "Josephine approval; freedom from the assassins.",
-    notes: "Either reinstate the family's nobility (Leliana — kill the writ author), reinstate via diplomacy (Josephine — pay), or resolve via romance.",
+    outcome: "Josephine approval; freedom from the assassins. Romance route adds a unique third resolution.",
+    notes: "Leliana's path is faster and narratively darker; Josephine's keeps her ideals intact. Romance route requires committed Josephine relationship.",
     tags: ["approval","josephine"] },
 
   // ============================================================

@@ -188,23 +188,66 @@
 
   function renderPins() {
     els.pinLayer.innerHTML = "";
+    if (state.view !== "map") return;
+
     const filtered = filterResources();
-    const inRegion = filtered.filter(r => r.region === state.currentRegion);
+    const inRegion = filtered.filter(r =>
+      r.region === state.currentRegion &&
+      typeof r.x === "number" && typeof r.y === "number"
+    );
+
+    // Cluster pins that share the same coords (rounded) so overlapping
+    // entries are still individually clickable.
+    const clusters = {};
+    inRegion.forEach(r => {
+      const key = r.x.toFixed(2) + "," + r.y.toFixed(2);
+      (clusters[key] = clusters[key] || []).push(r);
+    });
 
     inRegion.forEach(r => {
-      if (typeof r.x !== "number" || typeof r.y !== "number") return;
+      const key = r.x.toFixed(2) + "," + r.y.toFixed(2);
+      const group = clusters[key];
+      const idx = group.indexOf(r);
+      let dx = 0, dy = 0;
+      if (group.length > 1) {
+        // Spread members of a cluster on a small ring (px-space offsets via CSS calc).
+        const angle = (idx / group.length) * Math.PI * 2;
+        dx = Math.cos(angle) * 14; // px
+        dy = Math.sin(angle) * 14;
+      }
       const pin = document.createElement("div");
       pin.className = "pin" + (state.selected && state.selected.id === r.id ? " selected" : "");
+      pin.dataset.id = r.id;
       pin.style.background = catColor(r.category);
-      pin.style.left = (r.x * 100) + "%";
-      pin.style.top  = (r.y * 100) + "%";
+      pin.style.left = "calc(" + (r.x * 100) + "% + " + dx.toFixed(1) + "px)";
+      pin.style.top  = "calc(" + (r.y * 100) + "% + " + dy.toFixed(1) + "px)";
       pin.title = r.name + " — " + catName(r.category);
-      pin.addEventListener("click", () => {
-        state.selected = r;
-        render();
-      });
+      pin.addEventListener("click", () => selectResource(r));
       els.pinLayer.appendChild(pin);
     });
+  }
+
+  function selectResource(r) {
+    const prev = state.selected;
+    state.selected = r;
+    // Update only what depends on selection: pin highlight, list row highlight, detail panel.
+    if (els.pinLayer) {
+      els.pinLayer.querySelectorAll(".pin.selected").forEach(p => p.classList.remove("selected"));
+      const next = els.pinLayer.querySelector('.pin[data-id="' + cssEscape(r.id) + '"]');
+      if (next) next.classList.add("selected");
+    }
+    if (els.resultsList) {
+      els.resultsList.querySelectorAll(".resource-row.selected").forEach(p => p.classList.remove("selected"));
+      const nextRow = els.resultsList.querySelector('.resource-row[data-id="' + cssEscape(r.id) + '"]');
+      if (nextRow) nextRow.classList.add("selected");
+    }
+    renderDetail();
+    saveState();
+    void prev;
+  }
+
+  function cssEscape(s) {
+    return String(s).replace(/["\\]/g, "\\$&");
   }
 
   function renderList() {
@@ -235,6 +278,7 @@
       items.forEach(r => {
         const row = document.createElement("div");
         row.className = "resource-row" + (state.selected && state.selected.id === r.id ? " selected" : "");
+        row.dataset.id = r.id;
 
         const dot = document.createElement("span");
         dot.className = "dot";
@@ -258,10 +302,7 @@
         rar.style.borderColor = rarityColor(r.rarity);
         row.appendChild(rar);
 
-        row.addEventListener("click", () => {
-          state.selected = r;
-          render();
-        });
+        row.addEventListener("click", () => selectResource(r));
 
         block.appendChild(row);
       });
@@ -383,7 +424,8 @@
   function advisorPill(advisor, selected, recommended) {
     const cls = ["wt-pill", "advisor-" + advisor];
     if (recommended) cls.push("recommended");
-    return '<span class="' + cls.join(" ") + '">' + escapeHtml(ADVISOR_META[advisor].name) +
+    const meta = ADVISOR_META[advisor] || { name: advisor };
+    return '<span class="' + cls.join(" ") + '">' + escapeHtml(meta.name) +
            (recommended ? " ★" : "") + '</span>';
   }
 
@@ -397,6 +439,7 @@
     list.forEach(m => {
       const card = document.createElement("div");
       card.className = "wt-card" + (state.wtSelected && state.wtSelected.id === m.id ? " selected" : "");
+      card.dataset.id = m.id;
 
       const head = document.createElement("div");
       head.className = "wt-card-head";
@@ -425,14 +468,22 @@
         card.appendChild(body);
       }
 
-      card.addEventListener("click", () => {
-        state.wtSelected = m;
-        render();
-      });
+      card.addEventListener("click", () => selectMission(m));
 
       els.wtList.appendChild(card);
     });
     els.wtCounts.textContent = list.length + " of " + WT.length + " missions";
+  }
+
+  function selectMission(m) {
+    state.wtSelected = m;
+    if (els.wtList) {
+      els.wtList.querySelectorAll(".wt-card.selected").forEach(c => c.classList.remove("selected"));
+      const next = els.wtList.querySelector('.wt-card[data-id="' + cssEscape(m.id) + '"]');
+      if (next) next.classList.add("selected");
+    }
+    renderWtDetail();
+    saveState();
   }
 
   function renderWtDetail() {
@@ -463,15 +514,17 @@
         const rec = m.recommended === a;
         const t = (m.time && m.time[a]) ? m.time[a] : "—";
         const r = (m.rewardsBy && m.rewardsBy[a]) ? m.rewardsBy[a] : "—";
+        const meta = ADVISOR_META[a] || { name: a };
         html.push('<tr' + (rec ? ' class="rec-row"' : '') + '>' +
-                  '<td>' + escapeHtml(ADVISOR_META[a].name) + (rec ? ' ★' : '') + '</td>' +
+                  '<td>' + escapeHtml(meta.name) + (rec ? ' ★' : '') + '</td>' +
                   '<td>' + escapeHtml(t) + '</td>' +
                   '<td>' + escapeHtml(r) + '</td></tr>');
       });
       html.push('</table>');
       if (m.recommended) {
+        const recMeta = ADVISOR_META[m.recommended] || { name: m.recommended };
         html.push('<p style="margin-top:6px"><span class="wt-pill recommended">★ Recommended: ' +
-                  escapeHtml(ADVISOR_META[m.recommended].name) + '</span></p>');
+                  escapeHtml(recMeta.name) + '</span></p>');
       }
       html.push('</div>');
     }
@@ -537,7 +590,6 @@
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        route: state.route,
         search: state.search,
         activeRegions: [...state.activeRegions],
         activeCategories: [...state.activeCategories],
@@ -646,11 +698,6 @@
 
     // Routing — listen to hash changes
     window.addEventListener("hashchange", () => render());
-    els.navlinks.forEach(a => {
-      a.addEventListener("click", e => {
-        // let default hash navigation happen, then re-render via hashchange
-      });
-    });
 
     // Keyboard
     document.addEventListener("keydown", e => {

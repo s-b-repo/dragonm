@@ -55,10 +55,10 @@
     return d;
   }
 
-  function frame(theme) {
+  function frame(theme, ns) {
     return `
       <rect x="0" y="0" width="${W}" height="${H}" fill="${theme.base}" />
-      <rect x="0" y="0" width="${W}" height="${H}" fill="url(#vignette)" />
+      <rect x="0" y="0" width="${W}" height="${H}" fill="url(#vignette-${ns})" />
       <rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="${theme.frame}" stroke-width="2" />
       <rect x="14" y="14" width="${W-28}" height="${H-28}" fill="none" stroke="${theme.frame}" stroke-width="0.6" opacity="0.6" />
     `;
@@ -75,14 +75,14 @@
     `;
   }
 
-  function defs(theme) {
+  function defs(theme, ns) {
     return `
       <defs>
-        <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+        <radialGradient id="vignette-${ns}" cx="50%" cy="50%" r="70%">
           <stop offset="50%" stop-color="rgba(0,0,0,0)"/>
           <stop offset="100%" stop-color="${theme.vignette}"/>
         </radialGradient>
-        <pattern id="parch" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+        <pattern id="parch-${ns}" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
           <rect width="20" height="20" fill="${theme.base}"/>
           <circle cx="3" cy="5" r="0.6" fill="${theme.frame}" opacity="0.07"/>
           <circle cx="14" cy="13" r="0.5" fill="${theme.frame}" opacity="0.05"/>
@@ -213,8 +213,8 @@
   // Each returns an SVG string. Keep procedural seeds tied to region id.
   const BUILDERS = {
 
-    hinterlands: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    hinterlands: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Lake Luthias
       s += water(rng, theme, [[300,360],[420,330],[520,380],[480,460],[360,470],[290,420]]);
       // Forest patches
@@ -235,8 +235,8 @@
       return s;
     },
 
-    storm_coast: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    storm_coast: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Sea on the left with jagged coast
       let d = "M0,0 ";
       for (let y = 0; y <= H; y += 25) {
@@ -260,8 +260,8 @@
       return s;
     },
 
-    crestwood: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    crestwood: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Lake (post-drain visible)
       s += water(rng, theme, [[280,200],[520,180],[640,260],[600,360],[420,390],[260,330]]);
       // Forest
@@ -280,8 +280,8 @@
       return s;
     },
 
-    forbidden_oasis: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    forbidden_oasis: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       s += dunes(rng, theme, 8);
       // Oasis pool
       s += water(rng, theme, [[440,300],[540,290],[580,340],[540,380],[450,370],[420,330]]);
@@ -295,8 +295,8 @@
       return s;
     },
 
-    fallow_mire: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    fallow_mire: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Swamp pools
       for (let i = 0; i < 14; i++) {
         const cx = rng() * W;
@@ -320,8 +320,8 @@
       return s;
     },
 
-    western_approach: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    western_approach: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       s += dunes(rng, theme, 10);
       // Canyon cracks
       for (let i = 0; i < 3; i++) {
@@ -341,8 +341,8 @@
       return s;
     },
 
-    exalted_plains: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    exalted_plains: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Plains with battlefield ruins
       s += dunes(rng, theme, 4);
       s += ruins(rng, theme, 12);
@@ -359,8 +359,8 @@
       return s;
     },
 
-    emerald_graves: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    emerald_graves: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Dense forest with giant trees
       s += trees(rng, theme, 200, {x:30,y:50,w:940,h:500});
       // Giant ancient trees
@@ -380,8 +380,8 @@
       return s;
     },
 
-    emprise_du_lion: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    emprise_du_lion: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Snow ground variations
       for (let i = 0; i < 30; i++) {
         const cx = rng() * W, cy = rng() * H;
@@ -409,8 +409,8 @@
       return s;
     },
 
-    hissing_wastes: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    hissing_wastes: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       s += dunes(rng, theme, 14);
       // Tomb pyramids (4 cardinal + central)
       const tombs = [[180,180],[800,180],[180,420],[800,420],[500,300]];
@@ -431,8 +431,8 @@
       return s;
     },
 
-    skyhold: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    skyhold: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       s += mountains(rng, theme, 8, 560);
       // Castle complex
       const cx = 500, cy = 280;
@@ -452,8 +452,8 @@
       return s;
     },
 
-    haven: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    haven: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       s += mountains(rng, theme, 9, 540);
       // Snowy ground
       for (let i = 0; i < 40; i++) {
@@ -479,8 +479,8 @@
       return s;
     },
 
-    val_royeaux: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    val_royeaux: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // City grid
       for (let r = 0; r < 6; r++) {
         for (let c = 0; c < 10; c++) {
@@ -501,8 +501,8 @@
       return s;
     },
 
-    arbor_wilds: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    arbor_wilds: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       s += trees(rng, theme, 260, {x:30,y:50,w:940,h:500});
       // Temple of Mythal
       const cx = 500, cy = 300;
@@ -517,8 +517,8 @@
       return s;
     },
 
-    frostback_basin: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    frostback_basin: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       s += mountains(rng, theme, 8, 560);
       // Lake Stillwater
       s += water(rng, theme, [[260,260],[540,240],[700,310],[640,420],[420,460],[230,400]]);
@@ -539,8 +539,8 @@
       return s;
     },
 
-    deep_roads: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    deep_roads: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Cavern walls (dark)
       s += `<rect x="0" y="0" width="${W}" height="${H}" fill="${theme.base}"/>`;
       // Tunnels (lighter blobs)
@@ -570,8 +570,8 @@
       return s;
     },
 
-    darvaarad: function (rng, theme) {
-      let s = defs(theme) + frame(theme);
+    darvaarad: function (rng, theme, ns) {
+      let s = defs(theme, ns) + frame(theme, ns);
       // Industrial Qunari - orderly grid + red lyrium glow
       for (let r = 0; r < 5; r++) {
         for (let c = 0; c < 8; c++) {
@@ -618,17 +618,37 @@
     darvaarad:        "city"
   };
 
+  function escapeXml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   // ---- Public API ----
+  const cache = new Map();
   window.DAI_MAPS = {
     width:  W,
     height: H,
-    render: function (regionId) {
+    render: function (regionId, regionName) {
+      const cacheKey = regionId + "|" + (regionName || "");
+      const hit = cache.get(cacheKey);
+      if (hit) return hit;
       const theme = THEMES[REGION_THEME[regionId] || "forest"];
       const seed  = hashString(regionId);
       const rng   = seededRng(seed);
       const builder = BUILDERS[regionId];
-      const inner = builder ? builder(rng, theme) : defs(theme) + frame(theme) + label((regionId || "").toUpperCase(), W/2, H/2, theme, 24);
-      return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" class="dai-map-svg">${inner}</svg>`;
+      const ns = String(regionId || "default").replace(/[^A-Za-z0-9_-]/g, "_");
+      const inner = builder ? builder(rng, theme, ns) : defs(theme, ns) + frame(theme, ns) + label((regionId || "").toUpperCase(), W/2, H/2, theme, 24);
+      const titleId = "dai-map-title-" + ns;
+      const descId  = "dai-map-desc-"  + ns;
+      const themeName = REGION_THEME[regionId] || "forest";
+      const safeName = escapeXml(regionName || regionId || "Region");
+      const safeDesc = escapeXml("Stylized procedural map of " + (regionName || regionId) + " — " + themeName + " biome with landmarks and routes.");
+      const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" class="dai-map-svg" role="img" aria-labelledby="${titleId} ${descId}"><title id="${titleId}">${safeName} — region map</title><desc id="${descId}">${safeDesc}</desc>${inner}</svg>`;
+      cache.set(cacheKey, svg);
+      return svg;
     }
   };
 })();

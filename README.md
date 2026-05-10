@@ -16,8 +16,11 @@ pages, switchable from the top nav:
 ## Features
 
 ### Atlas page (`#/atlas`)
-- **162 resource entries** across 17 regions including Hakkon, Descent, and
-  Trespasser DLC.
+- **177 resource entries** across 17 regions including Hakkon, Descent, and
+  Trespasser DLC. Coverage is intentionally weighted toward farmable regions
+  (Hinterlands, Emprise, Hissing Wastes, Storm Coast each have 15+ entries);
+  story-only or hub regions (Haven, Skyhold, Val Royeaux, Arbor Wilds,
+  Darvaarad) are lighter on purpose — they have less to find in-game.
 - **Dynamic, procedurally-generated SVG maps** for each region — themed by
   biome (snow for Emprise, dunes for Hissing Wastes, jungle for Arbor Wilds,
   cave system for Deep Roads, castle for Skyhold, etc.). Seeded so every
@@ -124,6 +127,25 @@ Themes by region:
 - Maps: add a new theme or builder in `js/maps.js` if you want to refine
   any region's appearance.
 
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full workflow.
+
+## Validate
+
+A small Node validator checks data integrity (unique IDs, valid region /
+category / rarity / advisor references, coordinate bounds, etc.):
+
+```bash
+node scripts/validate-data.js
+```
+
+The same script runs in the GitHub Pages workflow before deploy, so a broken
+data file blocks the deploy instead of shipping it.
+
+## QA
+
+`docs/maps-preview.html` renders every region's procedural map on one page —
+useful when tweaking `js/maps.js`. Linked from the footer of the live app.
+
 ## Sources
 
 Compiled from public, fan-curated references:
@@ -149,14 +171,20 @@ dragonm/
 │   └── data/
 │       ├── regions.js       # 17 regions
 │       ├── categories.js    # 15 categories + 5 rarity tiers
-│       ├── resources.js     # 162 resource entries
+│       ├── resources.js     # 161 resource entries
 │       └── wartable.js      # 55+ war-table missions
-└── docs/
-    └── maps-preview.html    # sample render of all 17 maps for QA
+├── scripts/
+│   └── validate-data.js     # CI data integrity check
+├── docs/
+│   └── maps-preview.html    # render of all 17 maps for QA
+└── .github/
+    ├── workflows/pages.yml  # GitHub Pages deploy
+    └── ISSUE_TEMPLATE/      # bug / data correction / feature templates
 ```
 
 ## License
 
-MIT for the code. Mission outcomes and resource locations are derived from
+This project is licensed under the MIT License — see [`LICENSE`](LICENSE) for
+the full text. Mission outcomes and resource locations are derived from
 publicly documented community knowledge of a copyrighted game; this project
 ships no game assets.
