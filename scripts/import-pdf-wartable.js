@@ -26,13 +26,15 @@ const ROOT = path.resolve(__dirname, "..");
 const txtPath = process.argv[2] || "/tmp/dai-wt.txt";
 const lines = fs.readFileSync(txtPath, "utf8").split("\n");
 
-// Column slice ranges (calibrated against the PDF's "-layout" output).
+// Column slice ranges (only used for prefix/continuation lines; the
+// anchor row itself is parsed by content, since "Connections" is wider
+// than the gap and bleeds leftward into the time column).
 const COLS = {
   name:  [0, 36],
   req:   [36, 86],
   power: [86, 104],
-  time:  [104, 128],
-  spec:  [128, 142],
+  time:  [104, 124],
+  spec:  [124, 142],
   fr:    [142, 161],
   sr:    [161, 182],
   cr:    [182, 205],
@@ -41,6 +43,43 @@ const COLS = {
 };
 function slice(line, [a, b]) {
   return (line.slice(a, b) || "").replace(/\s+$/, "").replace(/^\s+/, "");
+}
+
+// Content-based parse for the anchor row. The signature is:
+//   <name + req> <power-digits> <time-digits> <Specialist> <rewards...>
+// We find the leftmost occurrence of (digits  digits  specialist) where the
+// power digits sit in cols 86..104 — that anchors the row reliably even when
+// "Connections" overflows the column gap.
+const ANCHOR_RE = /(\d+)\s+(\d+)\s+(Forces|Connections|Secrets|None)(?=\s{2,}|$)/g;
+function parseAnchor(line) {
+  let bestMatch = null, m;
+  ANCHOR_RE.lastIndex = 0;
+  while ((m = ANCHOR_RE.exec(line))) {
+    if (m.index >= 80 && m.index <= 110) { bestMatch = m; break; }
+  }
+  if (!bestMatch) return null;
+  const before = line.slice(0, bestMatch.index);
+  const after  = line.slice(bestMatch.index + bestMatch[0].length);
+  // Some pages of the PDF render with shifted left margins (~14 cols
+  // narrower). Detect by the leftmost run of 3+ spaces inside `before`.
+  let split = 36;
+  const m2 = before.match(/^(.{0,40}?\S)\s{3,}/);
+  if (m2) split = m2[1].length;
+  const nameRaw = before.slice(0, split);
+  const reqRaw  = before.slice(split);
+  const tokens  = after.trim().split(/\s{2,}/);
+  return {
+    nameRaw,
+    reqRaw,
+    power: parseInt(bestMatch[1], 10),
+    tmin:  parseInt(bestMatch[2], 10),
+    spec:  bestMatch[3],
+    fr:    tokens[0] || "",
+    sr:    tokens[1] || "",
+    cr:    tokens[2] || "",
+    level: tokens[3] || "",
+    tip:   tokens.slice(4).join(" ")
+  };
 }
 
 // Section headers introduce a thematic group of missions. They appear at
@@ -55,8 +94,7 @@ const records = [];
 let pending = []; // continuation lines preceding the next anchor
 
 function isAnchor(line) {
-  // Anchor rows have a digit in the power column.
-  return /\d/.test(slice(line, COLS.power));
+  return parseAnchor(line) !== null;
 }
 function isSectionHeader(line) {
   const name = slice(line, COLS.name);
@@ -65,14 +103,25 @@ function isSectionHeader(line) {
   return name && !others && SECTION_RE.test(name);
 }
 function joinCells(anchor) {
-  const cells = {};
-  for (const [k, range] of Object.entries(COLS)) {
-    let parts = pending.map(l => slice(l, range)).filter(Boolean);
-    const a = slice(anchor, range);
-    if (a) parts.push(a);
-    cells[k] = parts.join(" ");
+  const a = parseAnchor(anchor);
+  if (!a) return null;
+  function pre(col, anchorVal) {
+    const parts = pending.map(l => slice(l, COLS[col])).filter(Boolean);
+    if (anchorVal) parts.push(anchorVal.replace(/\s+$/, "").replace(/^\s+/, ""));
+    return parts.join(" ");
   }
-  return cells;
+  return {
+    name:  pre("name",  a.nameRaw),
+    req:   pre("req",   a.reqRaw),
+    power: a.power,
+    tmin:  a.tmin,
+    spec:  a.spec,
+    fr:    pre("fr",    a.fr),
+    sr:    pre("sr",    a.sr),
+    cr:    pre("cr",    a.cr),
+    level: a.level,
+    tip:   pre("tip",   a.tip)
+  };
 }
 
 for (let i = 0; i < lines.length; i++) {
@@ -115,7 +164,10 @@ function minToHMM(min) {
 }
 function cleanReward(s) {
   if (!s) return null;
-  const t = s.trim();
+  let t = s.trim();
+  // Some PDF rows separate cells by only one space — strip trailing "None"
+  // or "N/A" sentinels that bled in from the next column.
+  t = t.replace(/\s+(None|N\/A)$/i, "").trim();
   if (!t || /^(N\/A|None|—|-)$/i.test(t)) return null;
   return t;
 }
@@ -171,11 +223,12 @@ function inferCategory(name, prereq) {
 
 const missions = [];
 for (const r of records) {
+  if (!r) continue;
   const name = r.name.replace(/\s+/g, " ").trim();
   if (!name) continue;
-  const power = parseInt((r.power.match(/\d+/) || ["0"])[0], 10) || 0;
-  const tmin  = parseInt((r.time.match(/\d+/) || ["0"])[0], 10) || 0;
-  const specWord = (r.spec.match(/^(Forces|Secrets|Connections|None)\b/) || [])[1] || "None";
+  const power = r.power || 0;
+  const tmin  = r.tmin  || 0;
+  const specWord = r.spec || "None";
   const recommended = SPEC_TO_ADVISOR[specWord] || null;
 
   const time = {};
