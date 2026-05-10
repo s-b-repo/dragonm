@@ -21,15 +21,56 @@
   --focus:  0 0 0 2px var(--gold-2), 0 0 0 4px rgba(201,161,74,0.35);
   --bar-bg: linear-gradient(180deg, var(--bg-3), var(--bg-deep));
   --font-serif: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  /* Tells the browser this is a dark UI so native form widgets, native
+     scrollbars (Windows, macOS), and the address bar match the theme. */
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
+html {
+  /* Block Chrome Android's pull-to-refresh: it would otherwise fire any
+     time the user pulls down at the top of the page or a panel. */
+  overscroll-behavior: none;
+}
 body {
   background: radial-gradient(ellipse at top, var(--line-soft), var(--bg-darker) 70%);
   color: var(--ink);
   font-family: var(--font-serif);
-  display: flex; flex-direction: column; min-height: 100vh;
+  display: flex; flex-direction: column;
+  min-height: 100vh;   /* fallback */
+  min-height: 100dvh;  /* respects iOS Safari's dynamic toolbar */
+  /* Tap flash uses the brand gold instead of the default grey-blue. */
+  -webkit-tap-highlight-color: rgba(201,161,74,0.25);
+}
+
+/* Selected-text colour for dark theme — default blue on near-black is
+   harsh and the contrast is poor. */
+::selection { background: rgba(201,161,74,0.4); color: var(--ink); }
+
+/* Cross-browser scrollbar styling. Firefox uses standard properties;
+   Chromium/Safari use the -webkit- pseudos. Both are intentionally thin
+   and gold-tinted to match the theme without dominating panels. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+::-webkit-scrollbar         { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb   { background: var(--line); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+::-webkit-scrollbar-track   { background: transparent; }
+
+/* Chrome/Edge autofill paints inputs with a yellow-cream background that
+   doesn't fit a dark theme. The 0-px-thick inset shadow is the standard
+   override. The text colour also has to be set via -webkit-text-fill-color
+   because autofill overrides `color`. */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover {
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-input) inset;
+  caret-color: var(--ink);
+  transition: background-color 9999s ease-in-out 0s; /* defeat any later override */
 }
 
 /* Single global focus ring used by every interactive element via
@@ -233,9 +274,22 @@ body {
 .map-svg-host {
   position: relative;
   aspect-ratio: var(--map-aspect-w, 5) / var(--map-aspect-h, 3);
-  width: min(100cqw, calc(100cqh * var(--map-aspect-w, 5) / var(--map-aspect-h, 3)));
+  /* Pre-container-query fallback: width follows the stage, height is
+     derived from aspect-ratio. May overflow vertically on very-tall
+     stages but never zero-collapses. */
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
   height: auto;
   display: block;
+}
+/* Browsers with container query units use the precise fit. */
+@supports (width: 100cqw) {
+  .map-svg-host {
+    width: min(100cqw, calc(100cqh * var(--map-aspect-w, 5) / var(--map-aspect-h, 3)));
+    max-width: none;
+    max-height: none;
+  }
 }
 .map-svg-host > svg,
 .dai-map-fallback > svg {
@@ -557,4 +611,113 @@ body {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ============================================================
+   PHONE / TOUCH COMPATIBILITY
+   ============================================================ */
+
+/* Pull-to-refresh and rubber-band scrolling stay inside the panel the
+   user is touching — they don't leak out and scroll the document. */
+.sidebar, .detail, .list-view, .wt-list { overscroll-behavior: contain; }
+
+/* Skip the ~300 ms double-tap-to-zoom delay so pin taps feel instant.
+   `manipulation` allows pan + pinch but not double-tap zoom. */
+.map-stage { touch-action: manipulation; }
+
+/* Long mission names and resource titles wrap on narrow panels instead
+   of overflowing horizontally. */
+.detail-card h2,
+.wt-card h3 {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Topbar at narrow phones (≤700 px wide): title gets its own row so the
+   nav and drawer toggles don't fight for space. */
+@media (max-width: 700px) {
+  .topbar { padding: 8px 12px; gap: 8px 12px; }
+  .topbar h1 { font-size: 14px; flex-basis: 100%; }
+  .topnav { gap: 2px; }
+  .navlink { padding: 5px 10px; font-size: 13px; letter-spacing: 0.04em; }
+  .topbar-right { flex-wrap: wrap; gap: 8px; }
+  .counts { width: 100%; text-align: right; }
+}
+
+/* iPhone notch / Android camera cutouts: keep edge-pinned content out of
+   the safe-area exclusion zone. */
+.topbar { padding-top:    max(10px, env(safe-area-inset-top)); }
+.footer { padding-bottom: max(8px,  env(safe-area-inset-bottom)); }
+@media (max-width: 1100px) {
+  .detail {
+    /* Drawer hugs the right edge — pad for the notch and the home
+       indicator at the bottom so the close button / scrollbar isn't
+       hidden under hardware UI. */
+    padding-right:  max(14px, env(safe-area-inset-right));
+    padding-bottom: max(30px, env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 700px) {
+  .sidebar {
+    padding-left:   max(14px, env(safe-area-inset-left));
+    padding-bottom: max(30px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Landscape phones (most are < 500 px tall). The topbar should shrink
+   so the map gets the most pixels possible. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .topbar { padding: 4px 12px; gap: 8px; }
+  .topbar h1 { font-size: 13px; flex-basis: auto; }
+  .navlink   { padding: 3px 8px; font-size: 12px; }
+  .footer    { padding: 4px 12px; font-size: 10px; }
+}
+
+/* Windows high-contrast (forced-colors) mode: the gold focus ring uses
+   custom RGB values that the OS overrides to its own palette. Make sure
+   the focus indicator stays visible by mapping to a system colour. */
+@media (forced-colors: active) {
+  :focus-visible        { outline-color: Highlight; }
+  .pill.active,
+  .pill[aria-pressed="true"],
+  .navlink.active,
+  .navlink[aria-current="page"] { outline: 2px solid Highlight; }
+}
+
+/* Touch-only refinements: bigger tap targets and no input auto-zoom. */
+@media (pointer: coarse) {
+  /* iOS Safari zooms when an input's font-size is below 16 px — that
+     yanks the layout when the user taps the search box. */
+  #search,
+  #wtSearch { font-size: 16px; }
+
+  /* Pin keeps its 18 px visual but gets a 34 px tap region via a
+     transparent overlay so a thumb hits it reliably. */
+  .pin::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
+
+  /* Roomier list rows, pills, and buttons. */
+  .resource-row { padding: 12px 10px; }
+  .pill         { padding: 6px 12px; font-size: 13px; }
+  .btn          { padding: 8px 14px; }
+}
+
+/* On no-hover devices `:hover` styles "stick" after a tap and make the
+   UI look stuck. Cancel them. Keep this list in sync with the :hover
+   rules above the touch block. */
+@media (hover: none) {
+  .pin:hover          { transform: none; z-index: auto; }
+  .wt-card:hover      { border-color: var(--line); }
+  .resource-row:hover { background: transparent; }
+  .pill:hover         { border-color: var(--line); }
+  .btn:hover          { border-color: var(--line); color: var(--ink); }
+  .navlink:hover {
+    color: var(--ink);
+    border-color: transparent;
+    background: transparent;
+  }
+  .footer-link:hover  { color: var(--gold); border-color: var(--line); }
 }
