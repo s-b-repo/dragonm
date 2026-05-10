@@ -224,7 +224,12 @@
   function renderMapSvg() {
     if (lastMapRegion === state.currentRegion) return;
     const region = REGIONS.find(r => r.id === state.currentRegion);
-    els.mapSvgHost.innerHTML = MAPS.render(state.currentRegion, region ? region.name : state.currentRegion);
+    els.mapSvgHost.innerHTML = region
+      ? MAPS.renderForRegion(region)
+      : MAPS.renderProcedural(state.currentRegion, state.currentRegion);
+    if (typeof MAPS.attachFailover === "function") {
+      MAPS.attachFailover(els.mapSvgHost);
+    }
     lastMapRegion = state.currentRegion;
   }
 

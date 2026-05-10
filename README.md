@@ -21,10 +21,16 @@ pages, switchable from the top nav:
   (Hinterlands, Emprise, Hissing Wastes, Storm Coast each have 15+ entries);
   story-only or hub regions (Haven, Skyhold, Val Royeaux, Arbor Wilds,
   Darvaarad) are lighter on purpose — they have less to find in-game.
-- **Dynamic, procedurally-generated SVG maps** for each region — themed by
-  biome (snow for Emprise, dunes for Hissing Wastes, jungle for Arbor Wilds,
-  cave system for Deep Roads, castle for Skyhold, etc.). Seeded so every
-  region renders consistently.
+- **Real in-game region maps** for 14 of 17 regions, with a 3-stage failover:
+  1. **Remote** — hotlinked from [game-maps.com](https://game-maps.com/DAI/)
+     (community fan-map archive)
+  2. **Local** — bundled copy under `maps/` and served by GitHub Pages
+     (kicks in if the remote host is offline or blocks the request)
+  3. **Procedural** — seeded SVG generated client-side, themed per biome
+     (snow for Emprise, dunes for Hissing Wastes, etc.) — used for Skyhold,
+     Deep Roads, and Darvaarad which have no community-hosted region map
+- Pins use normalized 0–1 coordinates so they overlay any of the three
+  backdrops without code changes.
 - **Search** by name, source, tag, region, category, rarity.
 - **Filters** for region, category (metal, herb, leather, cloth, shard,
   astrarium, dragon, agent, codex, …), rarity tier.
