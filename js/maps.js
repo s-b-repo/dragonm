@@ -627,11 +627,16 @@
   }
 
   // ---- Public API ----
-  const cache = new Map();
+  const proceduralCache = new Map();
+  // Region IDs whose remote URL has already failed this session. Subsequent
+  // renders skip the remote and start at the local copy, so we don't re-hit
+  // a known-broken hotlink every time the user revisits.
+  const deadRemotes = new Set();
+
+  function trim(s) { return s == null ? "" : String(s).trim(); }
 
   function renderProcedural(regionId, regionName) {
-    const cacheKey = regionId + "|" + (regionName || "");
-    const hit = cache.get(cacheKey);
+    const hit = proceduralCache.get(regionId);
     if (hit) return hit;
     const theme = THEMES[REGION_THEME[regionId] || "forest"];
     const seed  = hashString(regionId);
@@ -645,25 +650,27 @@
     const safeName = escapeXml(regionName || regionId || "Region");
     const safeDesc = escapeXml("Stylized procedural map of " + (regionName || regionId) + " — " + themeName + " biome with landmarks and routes.");
     const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" class="dai-map-svg" role="img" aria-labelledby="${titleId} ${descId}"><title id="${titleId}">${safeName} — region map</title><desc id="${descId}">${safeDesc}</desc>${inner}</svg>`;
-    cache.set(cacheKey, svg);
+    proceduralCache.set(regionId, svg);
     return svg;
   }
 
   function renderForRegion(region) {
     if (!region) return "";
     const procedural = renderProcedural(region.id, region.name);
-    const remote = region.mapImage      ? String(region.mapImage).replace(/"/g, "&quot;")      : "";
-    const local  = region.mapImageLocal ? String(region.mapImageLocal).replace(/"/g, "&quot;") : "";
+    const remote = escapeXml(trim(region.mapImage));
+    const local  = escapeXml(trim(region.mapImageLocal));
     if (remote || local) {
-      // Real in-game-style map. Render chain: remote (community-hosted) → local
-      // (bundled in maps/ on GitHub Pages) → procedural SVG. The procedural SVG
-      // is always emitted hidden so it can swap in instantly if both image
-      // sources fail (offline, hotlink protection, CDN blip).
-      const initialSrc = remote || local;
+      // Render chain: remote → local → procedural. The procedural SVG is
+      // emitted hidden so it can swap in instantly if both image sources
+      // fail (offline, hotlink protection, CDN blip).
+      // If we've already burned the remote this session, skip it.
+      const startWithLocal = !remote || (deadRemotes.has(region.id) && local);
+      const initialSrc = startWithLocal ? local : remote;
       const alt = escapeXml("In-game map of " + (region.name || region.id || "region"));
       return (
         '<img class="dai-map-img" src="' + initialSrc + '" alt="' + alt + '" ' +
-        'decoding="async" data-region="' + region.id + '" ' +
+        'decoding="async" ' +
+        'data-region="' + escapeXml(region.id) + '" ' +
         'data-remote="' + remote + '" data-local="' + local + '" ' +
         'referrerpolicy="no-referrer" />' +
         '<div class="dai-map-fallback" hidden>' + procedural + '</div>'
@@ -678,17 +685,23 @@
     const img = host.querySelector("img.dai-map-img");
     const fallback = host.querySelector(".dai-map-fallback");
     if (!img) return;
-    let stage = img.getAttribute("src") === img.dataset.remote ? "remote" : "local";
+    const regionId = img.dataset.region;
+    let stage = img.getAttribute("src") === img.dataset.remote && img.dataset.remote
+      ? "remote"
+      : "local";
     img.addEventListener("error", function () {
-      if (stage === "remote" && img.dataset.local) {
-        stage = "local";
-        img.src = img.dataset.local;
-        return;
+      if (stage === "remote") {
+        if (regionId) deadRemotes.add(regionId);
+        if (img.dataset.local) {
+          stage = "local";
+          img.src = img.dataset.local;
+          return;
+        }
       }
-      // Both image sources failed — show the procedural SVG.
+      // No more sources — show the procedural SVG.
       img.hidden = true;
       if (fallback) fallback.hidden = false;
-    }, { once: false });
+    });
   }
 
   window.DAI_MAPS = {
