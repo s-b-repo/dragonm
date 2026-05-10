@@ -227,6 +227,19 @@
     els.mapSvgHost.innerHTML = region
       ? MAPS.renderForRegion(region)
       : MAPS.renderProcedural(state.currentRegion, state.currentRegion);
+
+    // Lock the host's aspect ratio to the image so pins (positioned in 0..1
+    // coords inside the host) land on the correct image pixels at every zoom.
+    const size = (region && region.mapImageSize) || { w: 1000, h: 600 };
+    els.mapSvgHost.style.setProperty("--map-aspect",   size.w + " / " + size.h);
+    els.mapSvgHost.style.setProperty("--map-aspect-w", size.w);
+    els.mapSvgHost.style.setProperty("--map-aspect-h", size.h);
+
+    // Co-locate the pin layer with the host so they share the same box.
+    if (els.pinLayer.parentNode !== els.mapSvgHost) {
+      els.mapSvgHost.appendChild(els.pinLayer);
+    }
+
     if (typeof MAPS.attachFailover === "function") {
       MAPS.attachFailover(els.mapSvgHost);
     }
