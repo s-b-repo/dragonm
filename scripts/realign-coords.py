@@ -46,23 +46,25 @@ COORDS = {
   "lm-hin-luthias":        (0.30, 0.45),
 
   # ---- STORM COAST (portrait 3:4) ----
-  "sto-iron-1":            (0.55, 0.50),
-  "sto-silverite-1":       (0.55, 0.32),
-  "sto-obsidian-1":        (0.65, 0.45),
-  "sto-elfroot-1":         (0.35, 0.55),
-  "sto-spindle-1":         (0.42, 0.55),
-  "sto-rams-1":            (0.55, 0.40),
-  "sto-bear-1":            (0.55, 0.58),
-  "sto-cotton-1":          (0.48, 0.50),
-  "sto-shard-1":           (0.45, 0.08),
-  "sto-shard-2":           (0.55, 0.20),
-  "sto-shard-3":           (0.70, 0.40),
-  "sto-shard-4":           (0.55, 0.70),
-  "sto-astra-1":           (0.50, 0.30),
-  "sto-dragon-vinsomer":   (0.10, 0.05),
-  "sto-agent-bull":        (0.55, 0.42),
-  "lm-sto-driftwood":      (0.50, 0.10),
-  "lm-sto-lighthouse":     (0.40, 0.18),
+  # Mainland is the right two-thirds of the image; the left third is ocean.
+  # Anything below x≈0.50 in the upper half lands in water.
+  "sto-iron-1":            (0.62, 0.52),
+  "sto-silverite-1":       (0.66, 0.36),
+  "sto-obsidian-1":        (0.78, 0.45),
+  "sto-elfroot-1":         (0.55, 0.55),
+  "sto-spindle-1":         (0.52, 0.65),
+  "sto-rams-1":            (0.62, 0.42),
+  "sto-bear-1":            (0.65, 0.58),
+  "sto-cotton-1":          (0.58, 0.50),
+  "sto-shard-1":           (0.55, 0.13),
+  "sto-shard-2":           (0.66, 0.20),
+  "sto-shard-3":           (0.80, 0.42),
+  "sto-shard-4":           (0.58, 0.75),
+  "sto-astra-1":           (0.65, 0.28),
+  "sto-dragon-vinsomer":   (0.13, 0.06),  # Dragon Island — small isle top-left
+  "sto-agent-bull":        (0.62, 0.42),
+  "lm-sto-driftwood":      (0.58, 0.12),
+  "lm-sto-lighthouse":     (0.55, 0.20),
 
   # ---- CRESTWOOD (portrait 4:5) ----
   "cre-iron-1":            (0.40, 0.50),
