@@ -26,12 +26,19 @@
     text-transform: uppercase;
     margin: 0 0 6px;
   }
+  /* Both image and procedural-SVG renderers fill the cell at the correct
+     aspect ratio. Without these, <img> would show at natural size (often
+     ~2400 px). */
+  .cell .dai-map-img,
   .cell svg {
     width: 100%;
     height: auto;
     border: 1px solid #3a2e22;
     display: block;
   }
+  .cell .dai-map-fallback { display: none; }
+  .cell .dai-map-fallback[hidden="false"],
+  .cell .dai-map-fallback:not([hidden]) { display: block; }
 </style>
 </head>
 <body>
@@ -53,6 +60,10 @@
       cell.appendChild(h2);
       cell.insertAdjacentHTML("beforeend", window.DAI_MAPS.render(region.id, region.name));
       grid.appendChild(cell);
+      // Wire the remote → local → procedural failover for this cell.
+      if (typeof window.DAI_MAPS.attachFailover === "function") {
+        window.DAI_MAPS.attachFailover(cell);
+      }
     });
   })();
 </script>

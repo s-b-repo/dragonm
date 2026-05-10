@@ -89,6 +89,10 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: 280px 1fr 340px;
+  /* Single row pinned to the available height. Without this the implicit
+     row sizes to its tallest child (long mission detail panels), pushing
+     the whole page to scroll instead of the panel scrolling internally. */
+  grid-template-rows: 1fr;
   gap: 0;
   min-height: 0;
 }
@@ -98,6 +102,9 @@ body {
   background: var(--bg-2);
   border-right: 1px solid var(--line);
   overflow-y: auto;
+  /* Allow the grid item to be smaller than its content so overflow-y can
+     clip and scroll. */
+  min-height: 0;
   padding: 14px 14px 30px;
 }
 .detail { border-right: 0; border-left: 1px solid var(--line); }
@@ -178,6 +185,7 @@ body {
   display: flex; flex-direction: column;
   background: var(--bg);
   min-width: 0;
+  min-height: 0;
 }
 .map-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .map-toolbar {
