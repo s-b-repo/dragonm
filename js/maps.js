@@ -30,6 +30,8 @@
 
   // ---- Helpers ----
   const W = 1000, H = 600;
+  // Keep in sync with --font-serif in css/style.css.
+  const SERIF_FONT = "'Iowan Old Style', Georgia, serif";
 
   function cloud(rng, cx, cy, r, points) {
     let d = "";
@@ -94,7 +96,7 @@
   function label(text, x, y, theme, size) {
     size = size || 14;
     return `<text x="${x}" y="${y}" text-anchor="middle"
-      font-family="'Iowan Old Style', Georgia, serif" font-size="${size}"
+      font-family="${SERIF_FONT}" font-size="${size}"
       fill="${theme.frame}" font-style="italic" letter-spacing="2"
       opacity="0.85">${text}</text>`;
   }
@@ -669,7 +671,7 @@
       const alt = escapeXml("In-game map of " + (region.name || region.id || "region"));
       return (
         '<img class="dai-map-img" src="' + initialSrc + '" alt="' + alt + '" ' +
-        'decoding="async" ' +
+        'decoding="async" draggable="false" ' +
         'data-region="' + escapeXml(region.id) + '" ' +
         'data-remote="' + remote + '" data-local="' + local + '" ' +
         'referrerpolicy="no-referrer" />' +
