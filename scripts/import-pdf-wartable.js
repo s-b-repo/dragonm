@@ -68,14 +68,25 @@ function parseAnchor(line) {
   const before     = line.slice(0, bestMatch.index);
   const after      = line.slice(specEndCol);
 
-  // before contains: name + req + power-digits + time-digits.
-  // Find the name/req boundary by the first run of 3+ spaces (column gap).
-  let nameEnd = before.length;
-  const m2 = before.match(/^(.{0,40}?\S)\s{3,}/);
-  if (m2) nameEnd = m2[1].length;
+  // before contains: name + req. Tokenize into "cells" separated by 2+
+  // spaces so a 1-space gap inside a long name (e.g. "Stop Venatori
+  // Activity in the West Complete to scout...") doesn't get fused.
+  const beforeTokens = tokensWithCols(before, 0);
+  // Anything starting before col 36-ish is name; the rest is req.
+  let nameEnd = 36;
+  if (beforeTokens.length) {
+    const firstAfter = beforeTokens.find(t => t.col >= 30);
+    if (firstAfter) nameEnd = firstAfter.col;
+    else nameEnd = beforeTokens[0].text.length;
+  }
+  // If the column found is way past the typical name col, fall back to
+  // the nearest word boundary at or before col 36.
+  if (nameEnd > 60) {
+    const fb = before.lastIndexOf(" ", 36);
+    nameEnd = fb > 0 ? fb : 36;
+  }
   const name = before.slice(0, nameEnd).trim();
-  const reqEndCandidate = before.replace(/\s+\d+\s*$/, "").length; // strip trailing power digit
-  const req = before.slice(nameEnd, reqEndCandidate).trim();
+  const req  = before.slice(nameEnd).replace(/\s+\d+\s*$/, "").trim();
 
   // Tokenize after-spec at absolute columns:
   const tail = tokensWithCols(after, specEndCol + bestMatch[0].length);
@@ -106,43 +117,54 @@ function isSectionHeader(line) {
 }
 
 function mergeRow(anchor, prefixLines) {
-  // Build cells from the anchor.
-  const tail = anchor.tail.slice();
-  // Pad to at least 5 cells (fr, sr, cr, level, tip).
-  while (tail.length < 5) tail.push({ text: "", col: 0 });
-  const cells = tail.slice(0, 5).map(t => t.text);
-  const tipExtra = tail.slice(5).map(t => t.text).join(" ");
-  if (tipExtra) cells[4] = (cells[4] + " " + tipExtra).trim();
-
-  // For each prefix line, slice at the anchor's tail columns and prepend.
-  const colStarts = tail.slice(0, 5).map(t => t.col);
-  const colEnds   = colStarts.slice(1).concat([Infinity]);
+  // Standard tail layout: [fr, sr, cr, level, tip]. The anchor may not have
+  // tokens for every cell. We synthesize placeholder columns so prefix-line
+  // tokens still have a stable target — using interpolated column positions
+  // from the cells we DO know about.
+  const realTail = anchor.tail.slice();
+  // Approximate canonical column positions (calibrated from pages where all
+  // 5 cells are filled): fr ~143, sr ~165, cr ~185, level ~206, tip ~225.
+  const CANONICAL = [143, 165, 185, 206, 225];
+  // Try to map each real-tail token to a canonical slot by closest column.
+  const cells = ["", "", "", "", ""];
+  const filledCols = [null, null, null, null, null];
+  for (const tk of realTail) {
+    let bestIdx = 0, bestDist = Infinity;
+    for (let i = 0; i < CANONICAL.length; i++) {
+      if (filledCols[i] !== null) continue;
+      const d = Math.abs(tk.col - CANONICAL[i]);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    }
+    cells[bestIdx] = tk.text;
+    filledCols[bestIdx] = tk.col;
+  }
+  // colStarts uses real positions where known, canonical otherwise.
+  const colStarts = filledCols.map((c, i) => c !== null ? c : CANONICAL[i]);
 
   let namePrefix = "", reqPrefix = "";
+  // Per-cell prefix accumulators — appended in document order so wrapped
+  // tokens stay in the order they appeared on the page.
+  const cellPrefix = ["", "", "", "", ""];
   for (const p of prefixLines) {
-    // Name continuation = content from col 0 to nameEnd
     const nm = p.slice(0, anchor.nameEnd).trim();
-    // Req continuation = content from nameEnd to powerCol
     const rq = p.slice(anchor.nameEnd, anchor.powerCol).trim();
-    if (nm && !rq) {
-      namePrefix = (namePrefix + " " + nm).trim();
-    } else if (rq) {
-      reqPrefix = (reqPrefix + " " + rq).trim();
-      // If both are present, name is also a continuation.
-      if (nm) namePrefix = (namePrefix + " " + nm).trim();
+    if (nm && !rq)        namePrefix = (namePrefix + " " + nm).trim();
+    else if (rq)          { reqPrefix = (reqPrefix + " " + rq).trim();
+                            if (nm) namePrefix = (namePrefix + " " + nm).trim(); }
+
+    const tokens = tokensWithCols(p.slice(anchor.powerCol), anchor.powerCol);
+    for (const tk of tokens) {
+      if (tk.col < colStarts[0] - 4) continue;
+      let bestIdx = 0, bestDist = Infinity;
+      for (let i = 0; i < colStarts.length; i++) {
+        const d = Math.abs(tk.col - colStarts[i]);
+        if (d < bestDist) { bestDist = d; bestIdx = i; }
+      }
+      cellPrefix[bestIdx] = (cellPrefix[bestIdx] + " " + tk.text).trim();
     }
-    for (let i = 0; i < 5; i++) {
-      // Slice that exact column band; trim; only accept if it doesn't wrap
-      // mid-word (i.e., we don't take it if it bleeds into adjacent column
-      // with no whitespace at the boundary).
-      const startBefore = p[colStarts[i] - 1];
-      const startHere   = p[colStarts[i]];
-      // Leading-space safety: if startBefore is non-space AND startHere is
-      // non-space, the boundary is mid-word — skip this cell for this line.
-      if (colStarts[i] > 0 && startBefore && startBefore !== " " && startHere && startHere !== " ") continue;
-      const piece = p.slice(colStarts[i], Number.isFinite(colEnds[i]) ? colEnds[i] : p.length).trim();
-      if (piece) cells[i] = (piece + " " + cells[i]).trim();
-    }
+  }
+  for (let i = 0; i < 5; i++) {
+    cells[i] = (cellPrefix[i] + " " + cells[i]).trim();
   }
   return {
     name: (namePrefix + " " + anchor.name).trim().replace(/\s+/g, " "),

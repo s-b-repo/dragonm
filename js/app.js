@@ -765,34 +765,12 @@
       render();
     });
 
-    // Two synchronized search inputs: the sidebar one (#wtSearch) and the
-    // prominent one above the mission list (#wtSearchTop). Typing in either
-    // updates state.wtSearch and mirrors into the other.
-    const wtSearchTop   = document.getElementById("wtSearchTop");
-    const wtSearchClear = document.getElementById("wtSearchClear");
-    const wtSearchInputs = [els.wtSearch, wtSearchTop].filter(Boolean);
-    wtSearchInputs.forEach(input => {
-      input.value = state.wtSearch;
-      input.addEventListener("input", debounce(e => {
-        state.wtSearch = e.target.value;
-        state.wtSelected = null;
-        wtSearchInputs.forEach(other => {
-          if (other !== e.target) other.value = state.wtSearch;
-        });
-        render();
-      }, 120));
-    });
-
-    if (wtSearchClear) {
-      wtSearchClear.addEventListener("click", () => {
-        state.wtSearch = "";
-        state.wtSelected = null;
-        wtSearchInputs.forEach(i => { i.value = ""; });
-        const focusTarget = wtSearchTop || els.wtSearch;
-        if (focusTarget) focusTarget.focus();
-        render();
-      });
-    }
+    els.wtSearch.value = state.wtSearch;
+    els.wtSearch.addEventListener("input", debounce(e => {
+      state.wtSearch = e.target.value;
+      state.wtSelected = null;
+      render();
+    }, 120));
 
     els.wtClearFilters.addEventListener("click", () => {
       state.wtActiveActs.clear();
@@ -801,7 +779,7 @@
       state.wtActiveRegions.clear();
       state.wtSearch = "";
       state.wtSelected = null;
-      wtSearchInputs.forEach(i => { i.value = ""; });
+      els.wtSearch.value = "";
       render();
     });
 
