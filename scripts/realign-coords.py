@@ -104,28 +104,28 @@ COORDS = {
   "wes-snoufleur-1":       (0.50, 0.18),
   "wes-shard-1":           (0.35, 0.08),
   "wes-shard-2":           (0.40, 0.40),
-  "wes-shard-3":           (0.20, 0.30),
+  "wes-shard-3":           (0.08, 0.28),  # Coracavus rooftop — far west
   "wes-shard-4":           (0.40, 0.65),
   "wes-shard-5":           (0.65, 0.55),
   "wes-astra-1":           (0.45, 0.40),
   "wes-dragon-abyssal":    (0.65, 0.45),
   "wes-quest-here-lies":   (0.50, 0.35),
-  "lm-wes-coracavus":      (0.20, 0.28),
+  "lm-wes-coracavus":      (0.08, 0.28),
   "lm-wes-bridge":         (0.40, 0.42),
 
   # ---- EXALTED PLAINS (portrait) ----
-  "exa-iron-1":            (0.40, 0.40),
+  "exa-iron-1":            (0.45, 0.45),
   "exa-silverite-1":       (0.45, 0.28),
   "exa-dawnstone-1":       (0.55, 0.18),
   "exa-elfroot-1":         (0.45, 0.35),
   "exa-prophets-1":        (0.30, 0.45),
   "exa-velvet-1":          (0.50, 0.30),
-  "exa-shard-1":           (0.18, 0.20),
+  "exa-shard-1":           (0.32, 0.10),  # NW battlements near Citadelle
   "exa-shard-2":           (0.30, 0.05),
   "exa-shard-3":           (0.65, 0.20),
   "exa-shard-4":           (0.35, 0.85),
   "exa-astra-1":           (0.40, 0.50),
-  "exa-dragon-storm":      (0.75, 0.20),
+  "exa-dragon-storm":      (0.85, 0.25),  # Gamordan — far-east Sundered Lands cliffs
   "exa-quest-bones":       (0.40, 0.40),
   "lm-exa-citadelle":      (0.35, 0.10),
 
@@ -205,13 +205,15 @@ COORDS = {
   "hav-elfroot-1":         (0.50, 0.55),
   "hav-quest-breach":      (0.50, 0.45),
 
-  # ---- VAL ROYEAUX (very portrait) ----
-  "val-shop-1":            (0.50, 0.30),
-  "val-codex-1":           (0.50, 0.35),
+  # ---- VAL ROYEAUX (very portrait, two-level layout — explorable in
+  # the upper Main Level, around y=0.10-0.30) ----
+  "val-shop-1":            (0.45, 0.18),
+  "val-codex-1":           (0.55, 0.22),
 
-  # ---- ARBOR WILDS (Temple of Mythal — small near-square) ----
-  "arb-quest-temple":      (0.50, 0.50),
-  "arb-codex-1":           (0.50, 0.50),
+  # ---- ARBOR WILDS (Temple of Mythal — Outer Courtyard top half,
+  # Inner Sanctum bottom half) ----
+  "arb-quest-temple":      (0.65, 0.22),  # Outer Courtyard ritual
+  "arb-codex-1":           (0.55, 0.75),  # Inner Sanctum chambers
 }
 
 def apply():
