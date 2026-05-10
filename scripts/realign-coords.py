@@ -38,7 +38,7 @@ COORDS = {
   "hin-shard-4":           (0.50, 0.65),
   "hin-shard-5":           (0.32, 0.88),
   "hin-astra-1":           (0.45, 0.22),
-  "hin-dragon-fereldan":   (0.95, 0.55),
+  "hin-dragon-fereldan":   (0.22, 0.87),  # Lady Shayna's Valley — south-west of the explorable area
   "hin-agent-blackwall":   (0.30, 0.55),
   "hin-agent-horsemaster": (0.60, 0.65),
   "hin-quest-templars":    (0.40, 0.50),
