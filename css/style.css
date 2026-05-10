@@ -238,9 +238,11 @@ body {
 }
 .pin:hover { transform: scale(1.4); z-index: 10; }
 .pin:focus-visible {
-  outline: none;
+  /* Use outline (not box-shadow) so the ring isn't clipped by the
+     map-stage's overflow:hidden when the pin sits on a map edge. */
+  outline: 2px solid var(--gold-2);
+  outline-offset: 2px;
   transform: scale(1.5);
-  box-shadow: 0 0 0 2px var(--gold-2), 0 0 12px var(--gold);
   z-index: 12;
 }
 .pin.selected {
