@@ -81,20 +81,21 @@ COORDS = {
   "lm-cre-old-crest":      (0.30, 0.45),
   "lm-cre-bronach":        (0.40, 0.18),
 
-  # ---- FORBIDDEN OASIS (very tall — explorable in top 40%) ----
+  # ---- FORBIDDEN OASIS (very tall — explorable in upper 40%, Solasan
+  # temple roughly centered around y=0.20-0.35) ----
   "oas-iron-1":            (0.45, 0.18),
   "oas-silverite-1":       (0.35, 0.28),
-  "oas-shard-tier":        (0.50, 0.12),
-  "oas-quest-jaws":        (0.50, 0.13),
-  "oas-codex-solas":       (0.50, 0.16),
+  "oas-shard-tier":        (0.45, 0.22),
+  "oas-quest-jaws":        (0.45, 0.25),
+  "oas-codex-solas":       (0.45, 0.32),
 
-  # ---- FALLOW MIRE (portrait) ----
-  "fal-iron-1":            (0.45, 0.30),
-  "fal-silverite-1":       (0.40, 0.45),
-  "fal-bloodlotus-1":      (0.35, 0.55),
-  "fal-deepmushroom":      (0.45, 0.40),
-  "fal-quest-soldiers":    (0.55, 0.20),
-  "lm-fal-hargol":         (0.55, 0.20),
+  # ---- FALLOW MIRE (portrait — explorable spans full canvas) ----
+  "fal-iron-1":            (0.45, 0.32),
+  "fal-silverite-1":       (0.45, 0.50),
+  "fal-bloodlotus-1":      (0.40, 0.60),
+  "fal-deepmushroom":      (0.50, 0.45),
+  "fal-quest-soldiers":    (0.55, 0.40),
+  "lm-fal-hargol":         (0.55, 0.40),
 
   # ---- WESTERN APPROACH (very tall portrait — explorable upper 75%) ----
   "wes-silverite-1":       (0.45, 0.30),

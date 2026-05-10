@@ -82,18 +82,18 @@ window.DAI_RESOURCES = [
   // ============================================================
   { id: "oas-iron-1",      name: "Iron",                  region: "forbidden_oasis", category: "metal", rarity: "common",   tier: 1, x: 0.45, y: 0.18, desc: "Iron.", source: "Dunes around Solasan.", tags: ["mining","metal"] },
   { id: "oas-silverite-1", name: "Silverite",             region: "forbidden_oasis", category: "metal", rarity: "uncommon", tier: 2, x: 0.35, y: 0.28, desc: "Silverite.", source: "Hilltop nodes.", tags: ["mining"] },
-  { id: "oas-shard-tier",  name: "Shards (all)",          region: "forbidden_oasis", category: "shard", rarity: "rare",     tier: 2, x: 0.5, y: 0.12, desc: "Some of the 130+ shards across the world unlock Solasan rooms here.", source: "Forbidden Oasis is the central temple — Solasan. Bring shards to unlock chambers.", tags: ["shard","temple","solasan"] },
-  { id: "oas-quest-jaws",  name: "What Pride Had Wrought", region: "forbidden_oasis", category: "quest", rarity: "unique", x: 0.5, y: 0.13, desc: "Solasan temple-clearing main quest.", source: "Talk to Frederic; clear all chambers (requires shards).", tags: ["quest","temple"] },
-  { id: "oas-codex-solas", name: "Pre-Veil temple notes",   region: "forbidden_oasis", category: "codex", rarity: "uncommon", x: 0.5, y: 0.16, desc: "Lore on the elven origins.", source: "Inside Solasan after entering the chambers.", tags: ["codex","lore"] },
+  { id: "oas-shard-tier",  name: "Shards (all)",          region: "forbidden_oasis", category: "shard", rarity: "rare",     tier: 2, x: 0.45, y: 0.22, desc: "Some of the 130+ shards across the world unlock Solasan rooms here.", source: "Forbidden Oasis is the central temple — Solasan. Bring shards to unlock chambers.", tags: ["shard","temple","solasan"] },
+  { id: "oas-quest-jaws",  name: "What Pride Had Wrought", region: "forbidden_oasis", category: "quest", rarity: "unique", x: 0.45, y: 0.25, desc: "Solasan temple-clearing main quest.", source: "Talk to Frederic; clear all chambers (requires shards).", tags: ["quest","temple"] },
+  { id: "oas-codex-solas", name: "Pre-Veil temple notes",   region: "forbidden_oasis", category: "codex", rarity: "uncommon", x: 0.45, y: 0.32, desc: "Lore on the elven origins.", source: "Inside Solasan after entering the chambers.", tags: ["codex","lore"] },
 
   // ============================================================
   // FALLOW MIRE
   // ============================================================
-  { id: "fal-iron-1",      name: "Iron",                  region: "fallow_mire", category: "metal",   rarity: "common",   tier: 1, x: 0.45, y: 0.3, desc: "Iron.", source: "Marshlands.", tags: ["mining"] },
-  { id: "fal-silverite-1", name: "Silverite",             region: "fallow_mire", category: "metal",   rarity: "uncommon", tier: 2, x: 0.4, y: 0.45, desc: "Silverite.", source: "Hilltops above the swamp.", tags: ["mining"] },
-  { id: "fal-bloodlotus-1",name: "Blood Lotus",           region: "fallow_mire", category: "herb",    rarity: "uncommon", tier: 2, x: 0.35, y: 0.55, desc: "Wet herb.", source: "Marsh waters — many.", tags: ["herb"] },
-  { id: "fal-deepmushroom",name: "Deep Mushroom",         region: "fallow_mire", category: "herb",    rarity: "common",   tier: 1, x: 0.45, y: 0.4, desc: "Used in tonics.", source: "Caves and shaded areas.", tags: ["herb"] },
-  { id: "fal-quest-soldiers",name: "Captured Inquisition Soldiers", region: "fallow_mire", category: "quest", rarity: "unique", x: 0.55, y: 0.2, desc: "Defeat the Avvar Hand.", source: "Hargol the Hand boss in Hargol's Stronghold.", tags: ["quest","avvar"] },
+  { id: "fal-iron-1",      name: "Iron",                  region: "fallow_mire", category: "metal",   rarity: "common",   tier: 1, x: 0.45, y: 0.32, desc: "Iron.", source: "Marshlands.", tags: ["mining"] },
+  { id: "fal-silverite-1", name: "Silverite",             region: "fallow_mire", category: "metal",   rarity: "uncommon", tier: 2, x: 0.45, y: 0.5, desc: "Silverite.", source: "Hilltops above the swamp.", tags: ["mining"] },
+  { id: "fal-bloodlotus-1",name: "Blood Lotus",           region: "fallow_mire", category: "herb",    rarity: "uncommon", tier: 2, x: 0.4, y: 0.6, desc: "Wet herb.", source: "Marsh waters — many.", tags: ["herb"] },
+  { id: "fal-deepmushroom",name: "Deep Mushroom",         region: "fallow_mire", category: "herb",    rarity: "common",   tier: 1, x: 0.5, y: 0.45, desc: "Used in tonics.", source: "Caves and shaded areas.", tags: ["herb"] },
+  { id: "fal-quest-soldiers",name: "Captured Inquisition Soldiers", region: "fallow_mire", category: "quest", rarity: "unique", x: 0.55, y: 0.4, desc: "Defeat the Avvar Hand.", source: "Hargol the Hand boss in Hargol's Stronghold.", tags: ["quest","avvar"] },
 
   // ============================================================
   // WESTERN APPROACH
@@ -104,7 +104,7 @@ window.DAI_RESOURCES = [
   { id: "wes-snoufleur-1", name: "Snoufleur Skin",        region: "western_approach", category: "leather",rarity: "uncommon", tier: 2, x: 0.5, y: 0.18, desc: "Snoufleur drops.", source: "Northern sands — Snoufleurs roam in packs.", tags: ["leather"] },
   { id: "wes-shard-1",     name: "Shard #1",              region: "western_approach", category: "shard", rarity: "rare",     tier: 2, x: 0.35, y: 0.08, desc: "Shard.", source: "NW dunes.", tags: ["shard"] },
   { id: "wes-shard-2",     name: "Shard #2",              region: "western_approach", category: "shard", rarity: "rare",     tier: 2, x: 0.4, y: 0.4, desc: "Shard.", source: "On the bridge near Lost Spring Canyon.", tags: ["shard"] },
-  { id: "wes-shard-3",     name: "Shard #3",              region: "western_approach", category: "shard", rarity: "rare",     tier: 2, x: 0.2, y: 0.3, desc: "Shard.", source: "Coracavus rooftop.", tags: ["shard"] },
+  { id: "wes-shard-3",     name: "Shard #3",              region: "western_approach", category: "shard", rarity: "rare",     tier: 2, x: 0.08, y: 0.28, desc: "Shard.", source: "Coracavus rooftop.", tags: ["shard"] },
   { id: "wes-shard-4",     name: "Shard #4",              region: "western_approach", category: "shard", rarity: "rare",     tier: 2, x: 0.4, y: 0.65, desc: "Shard.", source: "South canyon walls.", tags: ["shard"] },
   { id: "wes-shard-5",     name: "Shard #5",              region: "western_approach", category: "shard", rarity: "rare",     tier: 2, x: 0.65, y: 0.55, desc: "Shard.", source: "Dragon ridge to the east.", tags: ["shard"] },
   { id: "wes-astra-1",     name: "Astrarium of the Western Approach", region: "western_approach", category: "astrarium", rarity: "unique", x: 0.45, y: 0.4, desc: "Reward cave near Echo Back Canyon.", source: "Three constellations across the dunes.", tags: ["astrarium"] },
@@ -114,18 +114,18 @@ window.DAI_RESOURCES = [
   // ============================================================
   // EXALTED PLAINS
   // ============================================================
-  { id: "exa-iron-1",      name: "Iron",                  region: "exalted_plains", category: "metal", rarity: "common",   tier: 1, x: 0.4, y: 0.4, desc: "Iron.", source: "Battlefield ruins.", tags: ["mining"] },
+  { id: "exa-iron-1",      name: "Iron",                  region: "exalted_plains", category: "metal", rarity: "common",   tier: 1, x: 0.45, y: 0.45, desc: "Iron.", source: "Battlefield ruins.", tags: ["mining"] },
   { id: "exa-silverite-1", name: "Silverite",              region: "exalted_plains", category: "metal", rarity: "uncommon", tier: 2, x: 0.45, y: 0.28, desc: "Silverite.", source: "Hill ridges.", tags: ["mining"] },
   { id: "exa-dawnstone-1", name: "Dawnstone",              region: "exalted_plains", category: "metal", rarity: "rare",     tier: 3, x: 0.55, y: 0.18, desc: "Tier-3 metal — Sundered Lands.", source: "Northern Sundered Lands ridges.", tags: ["mining","tier3"] },
   { id: "exa-elfroot-1",   name: "Royal Elfroot",          region: "exalted_plains", category: "herb",  rarity: "rare",     tier: 3, x: 0.45, y: 0.35, desc: "Royal elfroot harvest.", source: "Mossy Var Bellanaris woods.", tags: ["herb"] },
   { id: "exa-prophets-1",  name: "Prophet's Laurel",       region: "exalted_plains", category: "herb",  rarity: "rare",     tier: 3, x: 0.3, y: 0.45, desc: "Used in master regen potions.", source: "Stone outcrops near the Dalish camp.", tags: ["herb"] },
   { id: "exa-velvet-1",    name: "Plush Fustian Velvet",   region: "exalted_plains", category: "cloth", rarity: "rare",     tier: 3, x: 0.5, y: 0.3, desc: "Tier-3 cloth.", source: "Drops from Freemen of the Dales captains.", tags: ["cloth"] },
-  { id: "exa-shard-1",     name: "Shard #1",               region: "exalted_plains", category: "shard", rarity: "rare",     tier: 2, x: 0.18, y: 0.2, desc: "Shard.", source: "NW battlements.", tags: ["shard"] },
+  { id: "exa-shard-1",     name: "Shard #1",               region: "exalted_plains", category: "shard", rarity: "rare",     tier: 2, x: 0.32, y: 0.1, desc: "Shard.", source: "NW battlements (Citadelle area).", tags: ["shard"] },
   { id: "exa-shard-2",     name: "Shard #2",               region: "exalted_plains", category: "shard", rarity: "rare",     tier: 2, x: 0.3, y: 0.05, desc: "Shard.", source: "On a tower near Citadelle du Corbeau.", tags: ["shard"] },
   { id: "exa-shard-3",     name: "Shard #3",               region: "exalted_plains", category: "shard", rarity: "rare",     tier: 2, x: 0.65, y: 0.2, desc: "Shard.", source: "Var Bellanaris cliffs.", tags: ["shard"] },
   { id: "exa-shard-4",     name: "Shard #4",               region: "exalted_plains", category: "shard", rarity: "rare",     tier: 2, x: 0.35, y: 0.85, desc: "Shard.", source: "South corner of the Sundered Lands.", tags: ["shard"] },
   { id: "exa-astra-1",     name: "Astrarium of the Exalted Plains", region: "exalted_plains", category: "astrarium", rarity: "unique", x: 0.4, y: 0.5, desc: "Reward cave at Path of Flame.", source: "Three constellations across battlefields.", tags: ["astrarium"] },
-  { id: "exa-dragon-storm",name: "Gamordan Stormrider",    region: "exalted_plains", category: "dragon", rarity: "unique", x: 0.75, y: 0.2, desc: "Level 14 high dragon (electric).", source: "East cliffs of the Sundered Lands.", tags: ["dragon"] },
+  { id: "exa-dragon-storm",name: "Gamordan Stormrider",    region: "exalted_plains", category: "dragon", rarity: "unique", x: 0.85, y: 0.25, desc: "Level 14 high dragon (electric).", source: "East cliffs of the Sundered Lands.", tags: ["dragon"] },
   { id: "exa-quest-bones", name: "Restoration of the Plains", region: "exalted_plains", category: "quest", rarity: "unique", x: 0.4, y: 0.4, desc: "Burn corpses, raise camps, restore order.", source: "Multiple stages following the Dalish camp arrival.", tags: ["quest","story"] },
 
   // ============================================================
@@ -226,14 +226,14 @@ window.DAI_RESOURCES = [
   // ============================================================
   // VAL ROYEAUX
   // ============================================================
-  { id: "val-shop-1",      name: "Tier-2/3 Schematics",    region: "val_royeaux", category: "quest", rarity: "rare", x: 0.5, y: 0.3, desc: "Several merchants sell uncommon schematics here.", source: "Cassandra & inquisition shop fronts.", tags: ["shop","schematic"] },
-  { id: "val-codex-1",     name: "Lore — Chantry & Empire",region: "val_royeaux", category: "codex", rarity: "common", x: 0.5, y: 0.35, desc: "Codex pickups around the city.", source: "Books and notes in side rooms.", tags: ["codex","lore"] },
+  { id: "val-shop-1",      name: "Tier-2/3 Schematics",    region: "val_royeaux", category: "quest", rarity: "rare", x: 0.45, y: 0.18, desc: "Several merchants sell uncommon schematics here.", source: "Cassandra & inquisition shop fronts.", tags: ["shop","schematic"] },
+  { id: "val-codex-1",     name: "Lore — Chantry & Empire",region: "val_royeaux", category: "codex", rarity: "common", x: 0.55, y: 0.22, desc: "Codex pickups around the city.", source: "Books and notes in side rooms.", tags: ["codex","lore"] },
 
   // ============================================================
   // ARBOR WILDS
   // ============================================================
-  { id: "arb-quest-temple",name: "Temple of Mythal",       region: "arbor_wilds", category: "quest", rarity: "unique", x: 0.5, y: 0.5, desc: "Story-only mission — no farming.", source: "Unlocked from main quest 'What Pride Had Wrought'.", tags: ["quest","story","mythal"] },
-  { id: "arb-codex-1",     name: "Sentinels & Mythal lore",region: "arbor_wilds", category: "codex", rarity: "unique", x: 0.5, y: 0.5, desc: "Pre-Veil elven lore.", source: "Found inside the Temple chambers.", tags: ["codex","lore"] },
+  { id: "arb-quest-temple",name: "Temple of Mythal",       region: "arbor_wilds", category: "quest", rarity: "unique", x: 0.65, y: 0.22, desc: "Story-only mission — no farming.", source: "Outer Courtyard ritual at the Temple of Mythal.", tags: ["quest","story","mythal"] },
+  { id: "arb-codex-1",     name: "Sentinels & Mythal lore",region: "arbor_wilds", category: "codex", rarity: "unique", x: 0.55, y: 0.75, desc: "Pre-Veil elven lore.", source: "Inner sanctum chambers inside the Temple.", tags: ["codex","lore"] },
 
   // ============================================================
   // HAVEN
@@ -259,7 +259,7 @@ window.DAI_RESOURCES = [
   { id: "lm-cre-old-crest",    name: "The Drowned Town of Crestwood",region: "crestwood",        category: "landmark", rarity: "common", x: 0.3, y: 0.45, desc: "Visible only after Still Waters drains the lake.", source: "Lake bed once emptied; central Crestwood basin.", tags: ["landmark","influence","post-drain"] },
   { id: "lm-cre-bronach",      name: "Caer Bronach battlement",      region: "crestwood",        category: "landmark", rarity: "common", x: 0.4, y: 0.18, desc: "Reclaimed Inquisition keep.", source: "Atop the keep after capture.", tags: ["landmark","influence"] },
   { id: "lm-fal-hargol",       name: "Hargol's Stronghold",          region: "fallow_mire",      category: "landmark", rarity: "common", x: 0.55, y: 0.2, desc: "Avvar fortress.", source: "Inside the fortress courtyard after defeating the Hand.", tags: ["landmark","influence","avvar"] },
-  { id: "lm-wes-coracavus",    name: "Coracavus prison-fort",        region: "western_approach", category: "landmark", rarity: "common", x: 0.2, y: 0.28, desc: "Tevinter prison ruin.", source: "Eastern Western Approach, on the rim of the canyon.", tags: ["landmark","influence","tevinter"] },
+  { id: "lm-wes-coracavus",    name: "Coracavus prison-fort",        region: "western_approach", category: "landmark", rarity: "common", x: 0.08, y: 0.28, desc: "Tevinter prison ruin.", source: "Western edge of the map, on the rim of the canyon.", tags: ["landmark","influence","tevinter"] },
   { id: "lm-wes-bridge",       name: "The Forgotten Sea bridge",     region: "western_approach", category: "landmark", rarity: "common", x: 0.4, y: 0.42, desc: "Span over the great salt waste.", source: "Mid-map, on the bridge between Lost Spring and Echo Back.", tags: ["landmark","influence"] },
   { id: "lm-exa-citadelle",    name: "Citadelle du Corbeau parapet", region: "exalted_plains",   category: "landmark", rarity: "common", x: 0.35, y: 0.1, desc: "Vantage over the battlefields.", source: "Topmost walkway after liberating the citadelle.", tags: ["landmark","influence"] },
   { id: "lm-eme-watchers",     name: "Watcher's Reach summit",       region: "emerald_graves",   category: "landmark", rarity: "common", x: 0.4, y: 0.1, desc: "Highest point in the Graves.", source: "Climb path through the giants' clearings.", tags: ["landmark","influence"] },
