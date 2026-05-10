@@ -628,27 +628,81 @@
 
   // ---- Public API ----
   const cache = new Map();
+
+  function renderProcedural(regionId, regionName) {
+    const cacheKey = regionId + "|" + (regionName || "");
+    const hit = cache.get(cacheKey);
+    if (hit) return hit;
+    const theme = THEMES[REGION_THEME[regionId] || "forest"];
+    const seed  = hashString(regionId);
+    const rng   = seededRng(seed);
+    const builder = BUILDERS[regionId];
+    const ns = String(regionId || "default").replace(/[^A-Za-z0-9_-]/g, "_");
+    const inner = builder ? builder(rng, theme, ns) : defs(theme, ns) + frame(theme, ns) + label((regionId || "").toUpperCase(), W/2, H/2, theme, 24);
+    const titleId = "dai-map-title-" + ns;
+    const descId  = "dai-map-desc-"  + ns;
+    const themeName = REGION_THEME[regionId] || "forest";
+    const safeName = escapeXml(regionName || regionId || "Region");
+    const safeDesc = escapeXml("Stylized procedural map of " + (regionName || regionId) + " — " + themeName + " biome with landmarks and routes.");
+    const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" class="dai-map-svg" role="img" aria-labelledby="${titleId} ${descId}"><title id="${titleId}">${safeName} — region map</title><desc id="${descId}">${safeDesc}</desc>${inner}</svg>`;
+    cache.set(cacheKey, svg);
+    return svg;
+  }
+
+  function renderForRegion(region) {
+    if (!region) return "";
+    const procedural = renderProcedural(region.id, region.name);
+    const remote = region.mapImage      ? String(region.mapImage).replace(/"/g, "&quot;")      : "";
+    const local  = region.mapImageLocal ? String(region.mapImageLocal).replace(/"/g, "&quot;") : "";
+    if (remote || local) {
+      // Real in-game-style map. Render chain: remote (community-hosted) → local
+      // (bundled in maps/ on GitHub Pages) → procedural SVG. The procedural SVG
+      // is always emitted hidden so it can swap in instantly if both image
+      // sources fail (offline, hotlink protection, CDN blip).
+      const initialSrc = remote || local;
+      const alt = escapeXml("In-game map of " + (region.name || region.id || "region"));
+      return (
+        '<img class="dai-map-img" src="' + initialSrc + '" alt="' + alt + '" ' +
+        'decoding="async" data-region="' + region.id + '" ' +
+        'data-remote="' + remote + '" data-local="' + local + '" ' +
+        'referrerpolicy="no-referrer" />' +
+        '<div class="dai-map-fallback" hidden>' + procedural + '</div>'
+      );
+    }
+    return procedural;
+  }
+
+  // Wire the failover chain on a freshly-rendered map host. Call after innerHTML.
+  function attachFailover(host) {
+    if (!host) return;
+    const img = host.querySelector("img.dai-map-img");
+    const fallback = host.querySelector(".dai-map-fallback");
+    if (!img) return;
+    let stage = img.getAttribute("src") === img.dataset.remote ? "remote" : "local";
+    img.addEventListener("error", function () {
+      if (stage === "remote" && img.dataset.local) {
+        stage = "local";
+        img.src = img.dataset.local;
+        return;
+      }
+      // Both image sources failed — show the procedural SVG.
+      img.hidden = true;
+      if (fallback) fallback.hidden = false;
+    }, { once: false });
+  }
+
   window.DAI_MAPS = {
     width:  W,
     height: H,
+    renderProcedural: renderProcedural,
+    renderForRegion:  renderForRegion,
+    attachFailover:   attachFailover,
+    // Back-compat: render(regionId, regionName) — looks up the region in DAI_REGIONS
+    // and prefers the image when available, else procedural.
     render: function (regionId, regionName) {
-      const cacheKey = regionId + "|" + (regionName || "");
-      const hit = cache.get(cacheKey);
-      if (hit) return hit;
-      const theme = THEMES[REGION_THEME[regionId] || "forest"];
-      const seed  = hashString(regionId);
-      const rng   = seededRng(seed);
-      const builder = BUILDERS[regionId];
-      const ns = String(regionId || "default").replace(/[^A-Za-z0-9_-]/g, "_");
-      const inner = builder ? builder(rng, theme, ns) : defs(theme, ns) + frame(theme, ns) + label((regionId || "").toUpperCase(), W/2, H/2, theme, 24);
-      const titleId = "dai-map-title-" + ns;
-      const descId  = "dai-map-desc-"  + ns;
-      const themeName = REGION_THEME[regionId] || "forest";
-      const safeName = escapeXml(regionName || regionId || "Region");
-      const safeDesc = escapeXml("Stylized procedural map of " + (regionName || regionId) + " — " + themeName + " biome with landmarks and routes.");
-      const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" class="dai-map-svg" role="img" aria-labelledby="${titleId} ${descId}"><title id="${titleId}">${safeName} — region map</title><desc id="${descId}">${safeDesc}</desc>${inner}</svg>`;
-      cache.set(cacheKey, svg);
-      return svg;
+      const region = (window.DAI_REGIONS || []).find(r => r.id === regionId);
+      if (region) return renderForRegion(region);
+      return renderProcedural(regionId, regionName);
     }
   };
 })();

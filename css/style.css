@@ -213,6 +213,22 @@ body {
 }
 .dai-map-svg { filter: drop-shadow(0 0 30px rgba(0,0,0,0.7)); }
 
+/* Real in-game map image. Filling the host with object-fit: contain keeps
+   normalized 0..1 pin coords aligned with the visible image area. */
+.dai-map-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 0 30px rgba(0,0,0,0.7));
+}
+.dai-map-img[hidden] { display: none; }
+.dai-map-fallback { width: 100%; height: 100%; }
+.dai-map-fallback[hidden] { display: none; }
+.dai-map-fallback > svg { width: 100%; height: 100%; display: block; }
+
 .pin-layer {
   position: absolute;
   inset: 0;
