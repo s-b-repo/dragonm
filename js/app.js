@@ -36,16 +36,14 @@
 
   // ---- App state ----
   const state = {
-    route: "atlas",                   // "atlas" | "wartable"
-    // atlas
+    route: "atlas",
     search: "",
     activeRegions: new Set(),
     activeCategories: new Set(),
     activeRarities: new Set(),
     selected: null,
-    view: "map",                      // "map" | "list"
+    view: "map",
     currentRegion: REGIONS[0].id,
-    // war table
     wtSearch: "",
     wtActiveActs: new Set(),
     wtActiveAdvisors: new Set(),
@@ -57,11 +55,14 @@
   // ---- DOM refs ----
   const $ = sel => document.querySelector(sel);
   const els = {
-    // routes
+    body:          document.body,
     routeAtlas:    $("#route-atlas"),
     routeWartable: $("#route-wartable"),
     navlinks:      document.querySelectorAll(".navlink"),
     counts:        $("#counts"),
+    toggleSidebar: $("#toggleSidebar"),
+    toggleDetail:  $("#toggleDetail"),
+    mobileBackdrop:$("#mobileBackdrop"),
     // atlas
     search:        $("#search"),
     regionList:    $("#regionList"),
@@ -91,29 +92,43 @@
     wtCounts:        $("#wtCounts")
   };
 
+  // pillGroups[key] = { container, items: [{ id, button }], activeSet, getColor }
+  const pillGroups = {};
+
   // ---- Routing ----
   function applyRoute() {
     const r = state.route;
     els.routeAtlas.classList.toggle("hidden", r !== "atlas");
     els.routeWartable.classList.toggle("hidden", r !== "wartable");
     els.navlinks.forEach(a => {
-      a.classList.toggle("active", a.getAttribute("data-route") === r);
+      const isActive = a.getAttribute("data-route") === r;
+      a.classList.toggle("active", isActive);
+      if (isActive) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
     });
     if (r === "atlas") {
       const total = RESOURCES.length;
       const visible = filterResources().length;
-      els.counts.textContent = visible + " / " + total + " resources";
+      const fc = activeFilterCount("atlas");
+      els.counts.textContent = visible + " / " + total + " resources" + (fc ? " · " + fc + " filter" + (fc > 1 ? "s" : "") + " active" : "");
     } else {
       const total = WT.length;
       const visible = filterMissions().length;
-      els.counts.textContent = visible + " / " + total + " missions";
+      const fc = activeFilterCount("wt");
+      els.counts.textContent = visible + " / " + total + " missions" + (fc ? " · " + fc + " filter" + (fc > 1 ? "s" : "") + " active" : "");
     }
+  }
+
+  function activeFilterCount(which) {
+    if (which === "atlas") {
+      return state.activeRegions.size + state.activeCategories.size + state.activeRarities.size + (state.search ? 1 : 0);
+    }
+    return state.wtActiveActs.size + state.wtActiveAdvisors.size + state.wtActiveCategories.size + state.wtActiveRegions.size + (state.wtSearch ? 1 : 0);
   }
 
   function parseRoute() {
     const hash = (location.hash || "").replace(/^#\/?/, "");
-    if (hash === "wartable") state.route = "wartable";
-    else state.route = "atlas";
+    state.route = hash === "wartable" ? "wartable" : "atlas";
   }
 
   // ============================================================
@@ -135,22 +150,43 @@
     });
   }
 
-  function renderPillList(container, items, activeSet, getColor) {
+  function buildPillGroup(key, container, items, activeSet, getColor) {
     container.innerHTML = "";
+    const entry = { container, items: [], activeSet, getColor: getColor || null };
     items.forEach(item => {
       const pill = document.createElement("button");
-      pill.className = "pill" + (activeSet.has(item.id) ? " active" : "");
+      pill.type = "button";
+      pill.className = "pill";
       pill.textContent = item.name;
+      pill.setAttribute("aria-pressed", activeSet.has(item.id) ? "true" : "false");
       if (getColor) {
-        const c = getColor(item);
-        if (!activeSet.has(item.id)) pill.style.borderLeft = "3px solid " + c;
+        pill.dataset.color = getColor(item);
       }
       pill.addEventListener("click", () => {
         if (activeSet.has(item.id)) activeSet.delete(item.id);
         else activeSet.add(item.id);
+        // Filter changes can leave a now-hidden selection; clear it.
+        if (key.startsWith("atlas-")) state.selected = null;
+        if (key.startsWith("wt-"))    state.wtSelected = null;
         render();
       });
       container.appendChild(pill);
+      entry.items.push({ id: item.id, button: pill });
+    });
+    pillGroups[key] = entry;
+    syncPillGroup(key);
+  }
+
+  function syncPillGroup(key) {
+    const entry = pillGroups[key];
+    if (!entry) return;
+    entry.items.forEach(({ id, button }) => {
+      const active = entry.activeSet.has(id);
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+      if (entry.getColor) {
+        button.style.borderLeft = active ? "" : ("3px solid " + button.dataset.color);
+      }
     });
   }
 
@@ -161,6 +197,7 @@
       const dot = document.createElement("span");
       dot.className = "dot";
       dot.style.background = c.color;
+      dot.setAttribute("aria-hidden", "true");
       const label = document.createElement("span");
       label.textContent = c.name;
       li.appendChild(dot);
@@ -170,84 +207,50 @@
   }
 
   function renderRegionSelect() {
-    els.regionSelect.innerHTML = "";
-    REGIONS.forEach(r => {
-      const opt = document.createElement("option");
-      opt.value = r.id;
-      opt.textContent = r.name + " — " + r.act;
-      els.regionSelect.appendChild(opt);
-    });
+    if (!els.regionSelect.options.length) {
+      REGIONS.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = r.name + " — " + r.act;
+        els.regionSelect.appendChild(opt);
+      });
+    }
     els.regionSelect.value = state.currentRegion;
     const region = REGIONS.find(r => r.id === state.currentRegion);
     els.regionMeta.textContent = region ? region.notes : "";
   }
 
+  let lastMapRegion = null;
   function renderMapSvg() {
-    els.mapSvgHost.innerHTML = MAPS.render(state.currentRegion);
+    if (lastMapRegion === state.currentRegion) return;
+    const region = REGIONS.find(r => r.id === state.currentRegion);
+    els.mapSvgHost.innerHTML = MAPS.render(state.currentRegion, region ? region.name : state.currentRegion);
+    lastMapRegion = state.currentRegion;
   }
 
   function renderPins() {
     els.pinLayer.innerHTML = "";
-    if (state.view !== "map") return;
-
     const filtered = filterResources();
-    const inRegion = filtered.filter(r =>
-      r.region === state.currentRegion &&
-      typeof r.x === "number" && typeof r.y === "number"
-    );
-
-    // Cluster pins that share the same coords (rounded) so overlapping
-    // entries are still individually clickable.
-    const clusters = {};
-    inRegion.forEach(r => {
-      const key = r.x.toFixed(2) + "," + r.y.toFixed(2);
-      (clusters[key] = clusters[key] || []).push(r);
-    });
+    const inRegion = filtered.filter(r => r.region === state.currentRegion);
 
     inRegion.forEach(r => {
-      const key = r.x.toFixed(2) + "," + r.y.toFixed(2);
-      const group = clusters[key];
-      const idx = group.indexOf(r);
-      let dx = 0, dy = 0;
-      if (group.length > 1) {
-        // Spread members of a cluster on a small ring (px-space offsets via CSS calc).
-        const angle = (idx / group.length) * Math.PI * 2;
-        dx = Math.cos(angle) * 14; // px
-        dy = Math.sin(angle) * 14;
-      }
-      const pin = document.createElement("div");
+      if (typeof r.x !== "number" || typeof r.y !== "number") return;
+      const pin = document.createElement("button");
+      pin.type = "button";
       pin.className = "pin" + (state.selected && state.selected.id === r.id ? " selected" : "");
-      pin.dataset.id = r.id;
       pin.style.background = catColor(r.category);
-      pin.style.left = "calc(" + (r.x * 100) + "% + " + dx.toFixed(1) + "px)";
-      pin.style.top  = "calc(" + (r.y * 100) + "% + " + dy.toFixed(1) + "px)";
-      pin.title = r.name + " — " + catName(r.category);
-      pin.addEventListener("click", () => selectResource(r));
+      pin.style.left = (r.x * 100) + "%";
+      pin.style.top  = (r.y * 100) + "%";
+      const label = r.name + " — " + catName(r.category) + " · " + rarityName(r.rarity);
+      pin.title = label;
+      pin.setAttribute("aria-label", label);
+      pin.setAttribute("aria-pressed", state.selected && state.selected.id === r.id ? "true" : "false");
+      pin.addEventListener("click", () => {
+        state.selected = r;
+        render();
+      });
       els.pinLayer.appendChild(pin);
     });
-  }
-
-  function selectResource(r) {
-    const prev = state.selected;
-    state.selected = r;
-    // Update only what depends on selection: pin highlight, list row highlight, detail panel.
-    if (els.pinLayer) {
-      els.pinLayer.querySelectorAll(".pin.selected").forEach(p => p.classList.remove("selected"));
-      const next = els.pinLayer.querySelector('.pin[data-id="' + cssEscape(r.id) + '"]');
-      if (next) next.classList.add("selected");
-    }
-    if (els.resultsList) {
-      els.resultsList.querySelectorAll(".resource-row.selected").forEach(p => p.classList.remove("selected"));
-      const nextRow = els.resultsList.querySelector('.resource-row[data-id="' + cssEscape(r.id) + '"]');
-      if (nextRow) nextRow.classList.add("selected");
-    }
-    renderDetail();
-    saveState();
-    void prev;
-  }
-
-  function cssEscape(s) {
-    return String(s).replace(/["\\]/g, "\\$&");
   }
 
   function renderList() {
@@ -276,13 +279,14 @@
       block.appendChild(h2);
 
       items.forEach(r => {
-        const row = document.createElement("div");
+        const row = document.createElement("button");
+        row.type = "button";
         row.className = "resource-row" + (state.selected && state.selected.id === r.id ? " selected" : "");
-        row.dataset.id = r.id;
 
         const dot = document.createElement("span");
         dot.className = "dot";
         dot.style.background = catColor(r.category);
+        dot.setAttribute("aria-hidden", "true");
         row.appendChild(dot);
 
         const name = document.createElement("span");
@@ -290,9 +294,15 @@
         name.textContent = r.name;
         row.appendChild(name);
 
+        const catBadge = document.createElement("span");
+        catBadge.className = "resource-cat-badge";
+        catBadge.textContent = catName(r.category);
+        catBadge.style.color = catColor(r.category);
+        row.appendChild(catBadge);
+
         const meta = document.createElement("span");
         meta.className = "resource-meta";
-        meta.textContent = catName(r.category) + (r.tier ? " · T" + r.tier : "");
+        meta.textContent = r.tier ? "T" + r.tier : "";
         row.appendChild(meta);
 
         const rar = document.createElement("span");
@@ -302,7 +312,10 @@
         rar.style.borderColor = rarityColor(r.rarity);
         row.appendChild(rar);
 
-        row.addEventListener("click", () => selectResource(r));
+        row.addEventListener("click", () => {
+          state.selected = r;
+          render();
+        });
 
         block.appendChild(row);
       });
@@ -347,7 +360,7 @@
       html.push('</div></div>');
     }
     html.push('  <div class="detail-section">');
-    html.push('    <button class="btn ghost full" id="jumpToRegion">Jump map to ' + escapeHtml(region.name || r.region) + '</button>');
+    html.push('    <button class="btn ghost full" id="jumpToRegion" type="button">Jump map to ' + escapeHtml(region.name || r.region) + '</button>');
     html.push('  </div>');
     html.push('</div>');
 
@@ -383,7 +396,6 @@
       if (state.wtActiveRegions.size && !state.wtActiveRegions.has(m.region)) return false;
       if (state.wtActiveAdvisors.size) {
         const ms = new Set(m.advisors || []);
-        // mission must have at least one of the active advisors
         let any = false;
         state.wtActiveAdvisors.forEach(a => { if (ms.has(a)) any = true; });
         if (!any) return false;
@@ -400,32 +412,31 @@
     });
   }
 
-  function renderWtFilters() {
-    // Acts
-    renderPillList(els.wtActList,
+  function buildWtFilters() {
+    buildPillGroup("wt-act", els.wtActList,
       ACTS.map(a => ({ id: a, name: a })),
       state.wtActiveActs);
-
-    // Advisors
-    renderPillList(els.wtAdvisorList,
+    buildPillGroup("wt-advisor", els.wtAdvisorList,
       Object.keys(ADVISOR_META).map(a => ({ id: a, name: ADVISOR_META[a].name })),
       state.wtActiveAdvisors,
       item => ADVISOR_META[item.id].color);
-
-    // Categories
-    renderPillList(els.wtCategoryList, WT_CATEGORIES, state.wtActiveCategories);
-
-    // Regions referenced by missions
+    buildPillGroup("wt-category", els.wtCategoryList, WT_CATEGORIES, state.wtActiveCategories);
     const regionSet = new Set(WT.map(m => m.region).filter(r => r && r !== "war-table"));
     const regionItems = REGIONS.filter(r => regionSet.has(r.id));
-    renderPillList(els.wtRegionList, regionItems, state.wtActiveRegions);
+    buildPillGroup("wt-region", els.wtRegionList, regionItems, state.wtActiveRegions);
   }
 
-  function advisorPill(advisor, selected, recommended) {
+  function syncWtFilters() {
+    syncPillGroup("wt-act");
+    syncPillGroup("wt-advisor");
+    syncPillGroup("wt-category");
+    syncPillGroup("wt-region");
+  }
+
+  function advisorPill(advisor, recommended) {
     const cls = ["wt-pill", "advisor-" + advisor];
     if (recommended) cls.push("recommended");
-    const meta = ADVISOR_META[advisor] || { name: advisor };
-    return '<span class="' + cls.join(" ") + '">' + escapeHtml(meta.name) +
+    return '<span class="' + cls.join(" ") + '">' + escapeHtml(ADVISOR_META[advisor].name) +
            (recommended ? " ★" : "") + '</span>';
   }
 
@@ -434,12 +445,18 @@
     els.wtList.innerHTML = "";
     if (list.length === 0) {
       els.wtList.innerHTML = '<div class="wt-empty">No missions match the current filters.</div>';
+      els.wtCounts.textContent = "0 of " + WT.length + " missions";
       return;
     }
     list.forEach(m => {
       const card = document.createElement("div");
       card.className = "wt-card" + (state.wtSelected && state.wtSelected.id === m.id ? " selected" : "");
-      card.dataset.id = m.id;
+      // Card contains an <h3>; a <button> wrapper would be invalid HTML.
+      // Use ARIA + tabindex + Enter/Space keyboard handler.
+      card.setAttribute("role", "button");
+      card.setAttribute("tabindex", "0");
+      card.setAttribute("aria-pressed", state.wtSelected && state.wtSelected.id === m.id ? "true" : "false");
+      card.setAttribute("aria-label", m.name + " — " + m.act + " — " + wtCatName(m.category));
 
       const head = document.createElement("div");
       head.className = "wt-card-head";
@@ -458,7 +475,7 @@
         (typeof m.power === "number" && m.power > 0
           ? '<span class="wt-pill">Power ' + m.power + '</span>'
           : '') +
-        (m.advisors || []).map(a => advisorPill(a, false, m.recommended === a)).join("");
+        (m.advisors || []).map(a => advisorPill(a, m.recommended === a)).join("");
       card.appendChild(row);
 
       if (m.outcome) {
@@ -468,22 +485,21 @@
         card.appendChild(body);
       }
 
-      card.addEventListener("click", () => selectMission(m));
+      const select = () => {
+        state.wtSelected = m;
+        render();
+      };
+      card.addEventListener("click", select);
+      card.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          select();
+        }
+      });
 
       els.wtList.appendChild(card);
     });
     els.wtCounts.textContent = list.length + " of " + WT.length + " missions";
-  }
-
-  function selectMission(m) {
-    state.wtSelected = m;
-    if (els.wtList) {
-      els.wtList.querySelectorAll(".wt-card.selected").forEach(c => c.classList.remove("selected"));
-      const next = els.wtList.querySelector('.wt-card[data-id="' + cssEscape(m.id) + '"]');
-      if (next) next.classList.add("selected");
-    }
-    renderWtDetail();
-    saveState();
   }
 
   function renderWtDetail() {
@@ -514,17 +530,15 @@
         const rec = m.recommended === a;
         const t = (m.time && m.time[a]) ? m.time[a] : "—";
         const r = (m.rewardsBy && m.rewardsBy[a]) ? m.rewardsBy[a] : "—";
-        const meta = ADVISOR_META[a] || { name: a };
         html.push('<tr' + (rec ? ' class="rec-row"' : '') + '>' +
-                  '<td>' + escapeHtml(meta.name) + (rec ? ' ★' : '') + '</td>' +
+                  '<td>' + escapeHtml(ADVISOR_META[a].name) + (rec ? ' ★' : '') + '</td>' +
                   '<td>' + escapeHtml(t) + '</td>' +
                   '<td>' + escapeHtml(r) + '</td></tr>');
       });
       html.push('</table>');
       if (m.recommended) {
-        const recMeta = ADVISOR_META[m.recommended] || { name: m.recommended };
         html.push('<p style="margin-top:6px"><span class="wt-pill recommended">★ Recommended: ' +
-                  escapeHtml(recMeta.name) + '</span></p>');
+                  escapeHtml(ADVISOR_META[m.recommended].name) + '</span></p>');
       }
       html.push('</div>');
     }
@@ -549,7 +563,7 @@
 
     if (m.region && m.region !== "war-table") {
       html.push('<div class="detail-section">');
-      html.push('  <button class="btn ghost full" id="jumpToAtlas">View ' + escapeHtml(regionName(m.region)) + ' on map</button>');
+      html.push('  <button class="btn ghost full" id="jumpToAtlas" type="button">View ' + escapeHtml(regionName(m.region)) + ' on map</button>');
       html.push('</div>');
     }
 
@@ -587,9 +601,11 @@
 
   // ---- Persistence ----
   const STORAGE_KEY = "dai-atlas-v2";
+  const STORAGE_VERSION = 2;
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        v: STORAGE_VERSION,
         search: state.search,
         activeRegions: [...state.activeRegions],
         activeCategories: [...state.activeCategories],
@@ -605,22 +621,53 @@
     } catch (e) { /* ignore */ }
   }
   function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const s = JSON.parse(raw);
-      state.search = s.search || "";
-      state.activeRegions = new Set(s.activeRegions || []);
-      state.activeCategories = new Set(s.activeCategories || []);
-      state.activeRarities = new Set(s.activeRarities || []);
-      state.view = s.view || "map";
-      state.currentRegion = s.currentRegion || REGIONS[0].id;
-      state.wtSearch = s.wtSearch || "";
-      state.wtActiveActs = new Set(s.wtActiveActs || []);
-      state.wtActiveAdvisors = new Set(s.wtActiveAdvisors || []);
-      state.wtActiveCategories = new Set(s.wtActiveCategories || []);
-      state.wtActiveRegions = new Set(s.wtActiveRegions || []);
-    } catch (e) { /* ignore */ }
+    let raw;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch (_) { return; }
+    if (!raw) return;
+    let s;
+    try { s = JSON.parse(raw); } catch (_) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (__) { /* ignore */ }
+      return;
+    }
+    if (s.v !== STORAGE_VERSION) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (_) { /* ignore */ }
+      return;
+    }
+    state.search = s.search || "";
+    state.activeRegions = new Set(s.activeRegions || []);
+    state.activeCategories = new Set(s.activeCategories || []);
+    state.activeRarities = new Set(s.activeRarities || []);
+    state.view = s.view || "map";
+    state.currentRegion = s.currentRegion || REGIONS[0].id;
+    state.wtSearch = s.wtSearch || "";
+    state.wtActiveActs = new Set(s.wtActiveActs || []);
+    state.wtActiveAdvisors = new Set(s.wtActiveAdvisors || []);
+    state.wtActiveCategories = new Set(s.wtActiveCategories || []);
+    state.wtActiveRegions = new Set(s.wtActiveRegions || []);
+  }
+
+  // ---- Mobile drawers ----
+  function closeDrawers() {
+    els.body.classList.remove("sidebar-open", "detail-open");
+    if (els.mobileBackdrop) els.mobileBackdrop.hidden = true;
+    if (els.toggleSidebar) els.toggleSidebar.setAttribute("aria-expanded", "false");
+    if (els.toggleDetail)  els.toggleDetail.setAttribute("aria-expanded", "false");
+  }
+  function toggleSidebarDrawer() {
+    const open = !els.body.classList.contains("sidebar-open");
+    els.body.classList.toggle("sidebar-open", open);
+    els.body.classList.remove("detail-open");
+    if (els.mobileBackdrop) els.mobileBackdrop.hidden = !open;
+    els.toggleSidebar.setAttribute("aria-expanded", open ? "true" : "false");
+    els.toggleDetail.setAttribute("aria-expanded", "false");
+  }
+  function toggleDetailDrawer() {
+    const open = !els.body.classList.contains("detail-open");
+    els.body.classList.toggle("detail-open", open);
+    els.body.classList.remove("sidebar-open");
+    if (els.mobileBackdrop) els.mobileBackdrop.hidden = !open;
+    els.toggleDetail.setAttribute("aria-expanded", open ? "true" : "false");
+    els.toggleSidebar.setAttribute("aria-expanded", "false");
   }
 
   // ---- Top-level render ----
@@ -629,9 +676,9 @@
     applyRoute();
 
     if (state.route === "atlas") {
-      renderPillList(els.regionList,    REGIONS,    state.activeRegions);
-      renderPillList(els.categoryList,  CATEGORIES, state.activeCategories, c => c.color);
-      renderPillList(els.rarityList,    RARITY,     state.activeRarities,   r => r.color);
+      syncPillGroup("atlas-region");
+      syncPillGroup("atlas-category");
+      syncPillGroup("atlas-rarity");
       renderRegionSelect();
       applyAtlasView();
       renderMapSvg();
@@ -639,7 +686,7 @@
       renderList();
       renderDetail();
     } else {
-      renderWtFilters();
+      syncWtFilters();
       renderWtList();
       renderWtDetail();
     }
@@ -649,13 +696,18 @@
   // ---- Wire up ----
   function init() {
     loadState();
-    parseRoute();
     renderLegend();
 
-    // Atlas
+    // Pills built once; sync flips active class on subsequent renders.
+    buildPillGroup("atlas-region",   els.regionList,   REGIONS,    state.activeRegions);
+    buildPillGroup("atlas-category", els.categoryList, CATEGORIES, state.activeCategories, c => c.color);
+    buildPillGroup("atlas-rarity",   els.rarityList,   RARITY,     state.activeRarities,   r => r.color);
+    buildWtFilters();
+
     els.search.value = state.search;
     els.search.addEventListener("input", debounce(e => {
       state.search = e.target.value;
+      state.selected = null;
       render();
     }, 120));
 
@@ -664,6 +716,7 @@
       state.activeCategories.clear();
       state.activeRarities.clear();
       state.search = "";
+      state.selected = null;
       els.search.value = "";
       render();
     });
@@ -679,10 +732,10 @@
       render();
     });
 
-    // War table
     els.wtSearch.value = state.wtSearch;
     els.wtSearch.addEventListener("input", debounce(e => {
       state.wtSearch = e.target.value;
+      state.wtSelected = null;
       render();
     }, 120));
 
@@ -692,14 +745,17 @@
       state.wtActiveCategories.clear();
       state.wtActiveRegions.clear();
       state.wtSearch = "";
+      state.wtSelected = null;
       els.wtSearch.value = "";
       render();
     });
 
-    // Routing — listen to hash changes
+    if (els.toggleSidebar)  els.toggleSidebar.addEventListener("click", toggleSidebarDrawer);
+    if (els.toggleDetail)   els.toggleDetail.addEventListener("click", toggleDetailDrawer);
+    if (els.mobileBackdrop) els.mobileBackdrop.addEventListener("click", closeDrawers);
+
     window.addEventListener("hashchange", () => render());
 
-    // Keyboard
     document.addEventListener("keydown", e => {
       const target = state.route === "atlas" ? els.search : els.wtSearch;
       if (e.key === "/" && document.activeElement !== target) {
@@ -707,6 +763,10 @@
         target.focus();
         target.select();
       } else if (e.key === "Escape") {
+        if (els.body.classList.contains("sidebar-open") || els.body.classList.contains("detail-open")) {
+          closeDrawers();
+          return;
+        }
         if (state.route === "atlas") state.selected = null;
         else state.wtSelected = null;
         render();
@@ -717,14 +777,10 @@
       }
     });
 
-    // Set default hash if missing
     if (!location.hash) location.hash = "#/atlas";
     render();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  // Scripts use `defer`, so DOM is ready when this runs.
+  init();
 })();
